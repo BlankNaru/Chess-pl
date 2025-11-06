@@ -25,37 +25,84 @@ public class ChessHelper {
 
                     FrameLayout square = new FrameLayout(activity);
 
-                    View tileView = new View(activity);
-                    tileView.setBackgroundColor(
-                            ((row + col) % 2 == 0) ? Color.parseColor("#EEEED2") : Color.parseColor("#769656")
-                    );
-                    FrameLayout.LayoutParams tileParams = new FrameLayout.LayoutParams(
-                            FrameLayout.LayoutParams.MATCH_PARENT,
-                            FrameLayout.LayoutParams.MATCH_PARENT
-                    );
-                    square.addView(tileView, tileParams);
+                    setView(activity, chessboard, row, col, square);
+                    setHighlightFilterView(activity, chessboard, square, row, col);
+                    setMoveView(activity, chessboard, square, row, col);
+                    setPieceView(activity, chessboard, square, row, col);
 
-                    ImageView pieceView = new ImageView(activity);
-                    pieceView.setScaleType(ImageView.ScaleType.CENTER_INSIDE);
-                    pieceView.setImageResource(R.drawable.king);
-                    pieceView.setVisibility(View.GONE);
-                    FrameLayout.LayoutParams pieceParams = new FrameLayout.LayoutParams(
-                            FrameLayout.LayoutParams.MATCH_PARENT,
-                            FrameLayout.LayoutParams.MATCH_PARENT
-                    );
-                    square.addView(pieceView, pieceParams);
+                    setOnClickAction(square, chessboard);
+                    addViewToLayout(chessboardLayout, cellSize, row, col, square);
+                    
 
-                    GridLayout.LayoutParams params = new GridLayout.LayoutParams();
-                    params.width = cellSize;
-                    params.height = cellSize;
-                    params.rowSpec = GridLayout.spec(row);
-                    params.columnSpec = GridLayout.spec(col);
-
-                    chessboardLayout.addView(square, params);
-                    chessboard.getFields().get(row).get(col).setGraphic(square, pieceView);
                 }
             }
             chessboard.piecesInit();
         });
+    }
+
+    private static void setOnClickAction(FrameLayout view, Chessboard chessboard) {
+        view.setOnClickListener(chessboard::onClick);
+    }
+
+    private static void setHighlightFilterView(Activity activity, Chessboard chessboard, FrameLayout square, int row, int col) {
+        ImageView highlightFilter = new ImageView(activity);
+        highlightFilter.setScaleType(ImageView.ScaleType.CENTER_INSIDE);
+        highlightFilter.setImageResource(0);
+        highlightFilter.setVisibility(View.GONE);
+        FrameLayout.LayoutParams pieceParams = new FrameLayout.LayoutParams(
+                FrameLayout.LayoutParams.MATCH_PARENT,
+                FrameLayout.LayoutParams.MATCH_PARENT
+        );
+        square.addView(highlightFilter, pieceParams);
+        chessboard.getFields().get(row).get(col).setHighlightFilterView(highlightFilter);
+    }
+
+    private static void setMoveView(Activity activity, Chessboard chessboard, FrameLayout square, int row, int col) {
+        ImageView moveView = new ImageView(activity);
+        moveView.setScaleType(ImageView.ScaleType.CENTER_INSIDE);
+        moveView.setImageResource(0);
+        moveView.setVisibility(View.GONE);
+        FrameLayout.LayoutParams pieceParams = new FrameLayout.LayoutParams(
+                FrameLayout.LayoutParams.MATCH_PARENT,
+                FrameLayout.LayoutParams.MATCH_PARENT
+        );
+        square.addView(moveView, pieceParams);
+        chessboard.getFields().get(row).get(col).setMoveView(moveView);
+    }
+
+    private static void addViewToLayout(GridLayout chessboardLayout, int cellSize, int row, int col, FrameLayout square) {
+        GridLayout.LayoutParams params = new GridLayout.LayoutParams();
+        params.width = cellSize;
+        params.height = cellSize;
+        params.rowSpec = GridLayout.spec(row);
+        params.columnSpec = GridLayout.spec(col);
+
+        chessboardLayout.addView(square, params);
+    }
+
+    private static void setPieceView(Activity activity, Chessboard chessboard, FrameLayout square, int row, int col) {
+        ImageView pieceView = new ImageView(activity);
+        pieceView.setScaleType(ImageView.ScaleType.CENTER_INSIDE);
+        pieceView.setImageResource(0);
+        pieceView.setVisibility(View.GONE);
+        FrameLayout.LayoutParams pieceParams = new FrameLayout.LayoutParams(
+                FrameLayout.LayoutParams.MATCH_PARENT,
+                FrameLayout.LayoutParams.MATCH_PARENT
+        );
+        square.addView(pieceView, pieceParams);
+        chessboard.getFields().get(row).get(col).setGraphic(pieceView);
+    }
+
+    private static void setView(Activity activity, Chessboard chessboard, int row, int col, FrameLayout square) {
+        View tileView = new View(activity);
+        tileView.setBackgroundColor(
+                ((row + col) % 2 == 0) ? Color.parseColor("#a6a67b") : Color.parseColor("#769656")
+        );
+        FrameLayout.LayoutParams tileParams = new FrameLayout.LayoutParams(
+                FrameLayout.LayoutParams.MATCH_PARENT,
+                FrameLayout.LayoutParams.MATCH_PARENT
+        );
+        square.addView(tileView, tileParams);
+        chessboard.getFields().get(row).get(col).setView(square);
     }
 }
