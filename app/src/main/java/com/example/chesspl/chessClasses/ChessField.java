@@ -1,11 +1,9 @@
 package com.example.chesspl.chessClasses;
 
-import android.app.Activity;
 import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 
-import com.example.chesspl.R;
 
 public class ChessField {
     private String letter;
@@ -19,6 +17,17 @@ public class ChessField {
         letter = field.substring(0,1);
         number = field.substring(1);
     }
+
+    public FrameLayout getView()
+    {
+        return view;
+    }
+
+    public ImageView getPieceView()
+    {
+        return pieceView;
+    }
+
 
     public ChessField(String letter, String number)
     {
@@ -40,7 +49,6 @@ public class ChessField {
         pieceView.setVisibility(View.GONE);
         this.piece = null;
     }
-
 
     public String getCoordinates()
     {

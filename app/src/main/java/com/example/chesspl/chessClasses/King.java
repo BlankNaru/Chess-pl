@@ -12,6 +12,7 @@ public class King implements Piece{
         this.color = color;
     }
 
+
     @Override
     public int getDrawable() {
         return R.drawable.king;

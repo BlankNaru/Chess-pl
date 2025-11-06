@@ -1,5 +1,6 @@
 package com.example.chesspl;
 
+import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.view.View;
@@ -22,6 +23,10 @@ public class MainActivity extends AppCompatActivity {
 
         GridLayout chessBoard = findViewById(R.id.chessBoard);
         Chessboard chessboard = new Chessboard(false, chessBoard, this);
+
+        Intent intent = new Intent(MainActivity.this, Puzzle.class);
+        startActivity(intent);
+
 
     }
 }
