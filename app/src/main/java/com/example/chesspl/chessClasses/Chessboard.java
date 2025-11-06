@@ -12,12 +12,13 @@ public class Chessboard {
 
     private List<List<ChessField>> fields;
     private boolean empty;
+    private ChessField selectedField;
 
     public Chessboard(boolean empty, GridLayout chessboardLayout, Activity activity)
     {
         this.empty = empty;
         fieldsInit();
-        ChessHelper.generateFields(chessboardLayout, activity, this);
+        ChessHelper.generateFields(chessboardLayout, activity, this,null);
     }
 
     public void fieldsInit()
@@ -75,7 +76,20 @@ public class Chessboard {
         return null;
     }
 
-    public List<List<ChessField>> getFields() {
+    public List<List<ChessField>> getFields()
+    {
         return fields;
     }
+
+    public ChessField getSelectedField()
+    {
+        return selectedField;
+    }
+
+    public void setSelectedField(ChessField field)
+    {
+        this.selectedField = field;
+    }
+
+
 }
