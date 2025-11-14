@@ -5,7 +5,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 
-import androidx.annotation.NonNull;
+
 import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.List;
@@ -27,9 +27,9 @@ public class PieceAdapter extends RecyclerView.Adapter<PieceAdapter.PieceViewHol
         this.listener = listener;
     }
 
-    @NonNull
+
     @Override
-    public PieceViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType)
+    public PieceViewHolder onCreateViewHolder( ViewGroup parent, int viewType)
     {
 
         LayoutInflater inflater = LayoutInflater.from(parent.getContext());
@@ -38,7 +38,7 @@ public class PieceAdapter extends RecyclerView.Adapter<PieceAdapter.PieceViewHol
     }
 
     @Override
-    public void onBindViewHolder(@NonNull PieceViewHolder holder, int position)
+    public void onBindViewHolder( PieceViewHolder holder, int position)
     {
 
         int drawableId = pieces.get(position);
@@ -62,7 +62,7 @@ public class PieceAdapter extends RecyclerView.Adapter<PieceAdapter.PieceViewHol
     public static class PieceViewHolder extends RecyclerView.ViewHolder
     {
         ImageView pieceImage;
-        public PieceViewHolder(@NonNull View itemView)
+        public PieceViewHolder( View itemView)
         {
             super(itemView);
             pieceImage = itemView.findViewById(R.id.pieceImage);

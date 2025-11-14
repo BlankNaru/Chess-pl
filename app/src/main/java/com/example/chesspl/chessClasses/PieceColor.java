@@ -1,6 +1,6 @@
 package com.example.chesspl.chessClasses;
 
-public enum Color {
+public enum PieceColor {
     WHITE,
     BLACK
 }
