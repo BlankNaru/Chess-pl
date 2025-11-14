@@ -1,10 +1,13 @@
-package com.example.chesspl.chessClasses;
+package com.example.chesspl.chessClasses.figureClasses;
 
 import android.graphics.Color;
 import android.view.View;
 import android.widget.ImageView;
 
 import com.example.chesspl.R;
+import com.example.chesspl.chessClasses.ChessField;
+import com.example.chesspl.chessClasses.Chessboard;
+import com.example.chesspl.chessClasses.PieceColor;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -29,21 +32,25 @@ public class Bishop implements Piece {
     }
 
     @Override
-    public void showMoves(Chessboard chessboard) {
+    public List<ChessField> getMoves(Chessboard chessboard, boolean skipEnemyKing, boolean includeProtected, boolean includeDiscoveredCheck) {
         List<ChessField> moves = new ArrayList<>();
         ChessField currentField = chessboard.getLocation(this);
 
         ChessField upperRightField = chessboard.getUpperRightField(currentField);
         while(upperRightField!=null)
         {
-            if(upperRightField.isEmpty())
+            if(upperRightField.isEmpty() || (skipEnemyKing && upperRightField.getPiece() instanceof King))
             {
                 moves.add(upperRightField);
                 upperRightField = chessboard.getUpperRightField(upperRightField);
                 continue;
             }
             if(upperRightField.getPiece().getPieceColor().equals(pieceColor))
+            {
+                if(includeProtected)
+                    moves.add(upperRightField);
                 break;
+            }
             else
                 moves.add(upperRightField);
             break;
@@ -52,14 +59,18 @@ public class Bishop implements Piece {
         ChessField upperLeftField = chessboard.getUpperLeftField(currentField);
         while(upperLeftField!=null)
         {
-            if(upperLeftField.isEmpty())
+            if(upperLeftField.isEmpty() || (skipEnemyKing && upperLeftField.getPiece() instanceof King))
             {
                 moves.add(upperLeftField);
                 upperLeftField = chessboard.getUpperLeftField(upperLeftField);
                 continue;
             }
             if(upperLeftField.getPiece().getPieceColor().equals(pieceColor))
+            {
+                if(includeProtected)
+                    moves.add(upperLeftField);
                 break;
+            }
             else
                 moves.add(upperLeftField);
             break;
@@ -68,14 +79,18 @@ public class Bishop implements Piece {
         ChessField lowerLeftField = chessboard.getLowerLeftField(currentField);
         while(lowerLeftField!=null)
         {
-            if(lowerLeftField.isEmpty())
+            if(lowerLeftField.isEmpty() || (skipEnemyKing && lowerLeftField.getPiece() instanceof King))
             {
                 moves.add(lowerLeftField);
                 lowerLeftField = chessboard.getLowerLeftField(lowerLeftField);
                 continue;
             }
             if(lowerLeftField.getPiece().getPieceColor().equals(pieceColor))
+            {
+                if(includeProtected)
+                    moves.add(lowerLeftField);
                 break;
+            }
             else
                 moves.add(lowerLeftField);
             break;
@@ -84,20 +99,24 @@ public class Bishop implements Piece {
         ChessField lowerRightField = chessboard.getLowerRightField(currentField);
         while(lowerRightField!=null)
         {
-            if(lowerRightField.isEmpty())
+            if(lowerRightField.isEmpty() || (skipEnemyKing && lowerRightField.getPiece() instanceof King))
             {
                 moves.add(lowerRightField);
                 lowerRightField = chessboard.getLowerRightField(lowerRightField);
                 continue;
             }
             if(lowerRightField.getPiece().getPieceColor().equals(pieceColor))
+            {
+                if(includeProtected)
+                    moves.add(lowerRightField);
                 break;
+            }
             else
                 moves.add(lowerRightField);
             break;
         }
 
-        chessboard.setPossibleMoves(moves);
+        return moves;
     }
 
     @Override
@@ -108,6 +127,11 @@ public class Bishop implements Piece {
     @Override
     public PieceColor getPieceColor() {
         return pieceColor;
+    }
+
+    @Override
+    public boolean hasMoved() {
+        return false;
     }
 
     private int getColor() {

@@ -1,10 +1,15 @@
-package com.example.chesspl.chessClasses;
+package com.example.chesspl.chessClasses.figureClasses;
 
 import android.graphics.Color;
 import android.view.View;
 import android.widget.ImageView;
 
 import com.example.chesspl.R;
+import com.example.chesspl.chessClasses.ChessField;
+import com.example.chesspl.chessClasses.Chessboard;
+import com.example.chesspl.chessClasses.PieceColor;
+import com.example.chesspl.chessClasses.Simulation;
+import com.example.chesspl.chessClasses.figureClasses.Piece;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -31,21 +36,25 @@ public class Rook implements Piece {
     }
 
     @Override
-    public void showMoves(Chessboard chessboard) {
+    public List<ChessField> getMoves(Chessboard chessboard, boolean skipEnemyKing, boolean includeProtected, boolean includeDiscoveredCheck) {
         List<ChessField> moves = new ArrayList<>();
         ChessField currentField = chessboard.getLocation(this);
 
         ChessField upperField = chessboard.getUpperField(currentField);
         while(upperField!=null)
         {
-            if(upperField.isEmpty())
+            if(upperField.isEmpty() || (skipEnemyKing && upperField.getPiece() instanceof King))
             {
                 moves.add(upperField);
                 upperField = chessboard.getUpperField(upperField);
                 continue;
             }
             if(upperField.getPiece().getPieceColor().equals(pieceColor))
+            {
+                if(includeProtected)
+                    moves.add(upperField);
                 break;
+            }
             else
                 moves.add(upperField);
             break;
@@ -54,14 +63,18 @@ public class Rook implements Piece {
         ChessField leftField = chessboard.getLeftField(currentField);
         while(leftField!=null)
         {
-            if(leftField.isEmpty())
+            if(leftField.isEmpty() || (skipEnemyKing && leftField.getPiece() instanceof King))
             {
                 moves.add(leftField);
                 leftField = chessboard.getLeftField(leftField);
                 continue;
             }
             if(leftField.getPiece().getPieceColor().equals(pieceColor))
+            {
+                if(includeProtected)
+                    moves.add(leftField);
                 break;
+            }
             else
                 moves.add(leftField);
             break;
@@ -70,14 +83,18 @@ public class Rook implements Piece {
         ChessField lowerField = chessboard.getLowerField(currentField);
         while(lowerField!=null)
         {
-            if(lowerField.isEmpty())
+            if(lowerField.isEmpty() || (skipEnemyKing && lowerField.getPiece() instanceof King))
             {
                 moves.add(lowerField);
                 lowerField = chessboard.getLowerField(lowerField);
                 continue;
             }
             if(lowerField.getPiece().getPieceColor().equals(pieceColor))
+            {
+                if(includeProtected)
+                    moves.add(lowerField);
                 break;
+            }
             else
                 moves.add(lowerField);
             break;
@@ -86,20 +103,38 @@ public class Rook implements Piece {
         ChessField rightField = chessboard.getRightField(currentField);
         while(rightField!=null)
         {
-            if(rightField.isEmpty())
+            if(rightField.isEmpty() || (skipEnemyKing && rightField.getPiece() instanceof King))
             {
                 moves.add(rightField);
                 rightField = chessboard.getRightField(rightField);
                 continue;
             }
             if(rightField.getPiece().getPieceColor().equals(pieceColor))
+            {
+                if(includeProtected)
+                    moves.add(rightField);
                 break;
+            }
             else
                 moves.add(rightField);
             break;
         }
 
-        chessboard.setPossibleMoves(moves);
+        if(includeDiscoveredCheck)
+        {
+            List<ChessField> resultInCheckFields = new ArrayList<>();
+            for(ChessField move : moves)
+            {
+                Simulation simulation = new Simulation();
+                simulation.startSimulation(chessboard.getLocation(this), move);
+                if(chessboard.checkIfChecked(getPieceColor()))
+                    resultInCheckFields.add(move);
+                simulation.stopSimulation();
+            }
+            moves.removeAll(resultInCheckFields);
+        }
+
+        return moves;
     }
 
     @Override
@@ -117,5 +152,10 @@ public class Rook implements Piece {
     @Override
     public PieceColor getPieceColor() {
         return pieceColor;
+    }
+
+    @Override
+    public boolean hasMoved() {
+        return !isFirstMove;
     }
 }

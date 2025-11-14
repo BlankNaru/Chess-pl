@@ -1,13 +1,17 @@
-package com.example.chesspl.chessClasses;
+package com.example.chesspl.chessClasses.figureClasses;
 
 import android.graphics.Color;
 import android.view.View;
 import android.widget.ImageView;
 
 import com.example.chesspl.R;
+import com.example.chesspl.chessClasses.ChessField;
+import com.example.chesspl.chessClasses.Chessboard;
+import com.example.chesspl.chessClasses.PieceColor;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class King implements Piece {
     private PieceColor pieceColor;
@@ -31,7 +35,7 @@ public class King implements Piece {
     }
 
     @Override
-    public void showMoves(Chessboard chessboard) {
+    public List<ChessField> getMoves(Chessboard chessboard, boolean skipEnemyKing, boolean includeProtected, boolean includeDiscoveredCheck) {
         List<ChessField> moves = new ArrayList<>();
         ChessField currentPosition = chessboard.getLocation(this);
         ChessField upperPosition = chessboard.getUpperField(currentPosition);
@@ -58,7 +62,12 @@ public class King implements Piece {
             moves.add(lowerRightPosition);
         if (lowerLeftPosition != null && (lowerLeftPosition.isEmpty() || !lowerLeftPosition.getPiece().getPieceColor().equals(pieceColor)))
             moves.add(lowerLeftPosition);
-        chessboard.setPossibleMoves(moves);
+        if(includeDiscoveredCheck)
+        {
+            List<ChessField> notAvailableFields = chessboard.getAllMovesForColor(getEnemyColor());
+            moves = moves.stream().filter(move -> !notAvailableFields.contains(move)).collect(Collectors.toList());
+        }
+        return moves;
     }
 
     @Override
@@ -74,5 +83,17 @@ public class King implements Piece {
     @Override
     public PieceColor getPieceColor() {
         return pieceColor;
+    }
+
+    @Override
+    public boolean hasMoved() {
+        return !isFirstMove;
+    }
+
+    public PieceColor getEnemyColor()
+    {
+        if(pieceColor == PieceColor.WHITE)
+            return PieceColor.BLACK;
+        return PieceColor.WHITE;
     }
 }

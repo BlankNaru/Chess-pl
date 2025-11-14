@@ -1,16 +1,18 @@
-package com.example.chesspl.chessClasses;
+package com.example.chesspl.chessClasses.figureClasses;
 
 import android.graphics.Color;
 import android.view.View;
 import android.widget.ImageView;
 
 import com.example.chesspl.R;
+import com.example.chesspl.chessClasses.ChessField;
+import com.example.chesspl.chessClasses.Chessboard;
+import com.example.chesspl.chessClasses.PieceColor;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class Knight implements Piece{
+public class Knight implements Piece {
 
     private PieceColor pieceColor;
 
@@ -32,11 +34,11 @@ public class Knight implements Piece{
     }
 
     @Override
-    public void showMoves(Chessboard chessboard) {
+    public List<ChessField> getMoves(Chessboard chessboard, boolean skipEnemyKing, boolean includeProtected, boolean includeDiscoveredCheck) {
         List<ChessField> moves = chessboard.getLShaped(chessboard.getLocation(this));
-        moves = moves.stream().filter(f -> f.isEmpty() || !f.getPiece().getPieceColor().equals(pieceColor)).collect(Collectors.toList());
+        moves = moves.stream().filter(f -> f.isEmpty() || !f.getPiece().getPieceColor().equals(pieceColor) || includeProtected).collect(Collectors.toList());
 
-        chessboard.setPossibleMoves(moves);
+        return moves;
     }
 
     @Override
@@ -54,5 +56,10 @@ public class Knight implements Piece{
     @Override
     public PieceColor getPieceColor() {
         return pieceColor;
+    }
+
+    @Override
+    public boolean hasMoved() {
+        return false;
     }
 }

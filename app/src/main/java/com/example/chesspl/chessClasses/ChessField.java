@@ -1,12 +1,10 @@
 package com.example.chesspl.chessClasses;
 
-import android.app.Activity;
-import android.content.res.ColorStateList;
 import android.view.View;
-import android.widget.FrameLayout;
 import android.widget.ImageView;
 
 import com.example.chesspl.R;
+import com.example.chesspl.chessClasses.figureClasses.Piece;
 
 public class ChessField {
     private String letter;
@@ -32,6 +30,10 @@ public class ChessField {
 
     public Piece getPiece() {
         return piece;
+    }
+    public void setSimulatedPiece(Piece piece)
+    {
+        this.piece = piece;
     }
 
     public void setPiece(Piece piece) {
@@ -98,7 +100,8 @@ public class ChessField {
         if(piece == null)
             return;
         isClicked = true;
-        piece.showMoves(chessboard);
+        chessboard.setPossibleMoves(piece.getMoves(chessboard, false, false, true));
+
     }
 
     public boolean isClicked() {

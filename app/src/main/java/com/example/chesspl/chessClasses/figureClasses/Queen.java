@@ -1,10 +1,14 @@
-package com.example.chesspl.chessClasses;
+package com.example.chesspl.chessClasses.figureClasses;
 
 import android.graphics.Color;
 import android.view.View;
 import android.widget.ImageView;
 
 import com.example.chesspl.R;
+import com.example.chesspl.chessClasses.ChessField;
+import com.example.chesspl.chessClasses.Chessboard;
+import com.example.chesspl.chessClasses.PieceColor;
+import com.example.chesspl.chessClasses.figureClasses.Piece;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,13 +34,13 @@ public class Queen implements Piece {
     }
 
     @Override
-    public void showMoves(Chessboard chessboard) {
+    public List<ChessField> getMoves(Chessboard chessboard, boolean skipEnemyKing, boolean includeProtected, boolean includeDiscoveredCheck) {
         List<ChessField> moves = new ArrayList<>();
 
-        moves.addAll(getBishopLikeFields(chessboard));
-        moves.addAll(getRookLikeFields(chessboard));
+        moves.addAll(getBishopLikeFields(chessboard, skipEnemyKing, includeProtected));
+        moves.addAll(getRookLikeFields(chessboard, skipEnemyKing, includeProtected));
 
-        chessboard.setPossibleMoves(moves);
+        return moves;
     }
 
     @Override
@@ -55,7 +59,12 @@ public class Queen implements Piece {
         return pieceColor;
     }
 
-    private List<ChessField> getBishopLikeFields(Chessboard chessboard)
+    @Override
+    public boolean hasMoved() {
+        return false;
+    }
+
+    private List<ChessField> getBishopLikeFields(Chessboard chessboard, boolean skipKing, boolean includeProtected)
     {
         List<ChessField> moves = new ArrayList<>();
         ChessField currentField = chessboard.getLocation(this);
@@ -63,14 +72,18 @@ public class Queen implements Piece {
         ChessField upperRightField = chessboard.getUpperRightField(currentField);
         while(upperRightField!=null)
         {
-            if(upperRightField.isEmpty())
+            if(upperRightField.isEmpty()  || (skipKing && upperRightField.getPiece() instanceof King))
             {
                 moves.add(upperRightField);
                 upperRightField = chessboard.getUpperRightField(upperRightField);
                 continue;
             }
             if(upperRightField.getPiece().getPieceColor().equals(pieceColor))
+            {
+                if(includeProtected)
+                    moves.add(upperRightField);
                 break;
+            }
             else
                 moves.add(upperRightField);
             break;
@@ -79,14 +92,18 @@ public class Queen implements Piece {
         ChessField upperLeftField = chessboard.getUpperLeftField(currentField);
         while(upperLeftField!=null)
         {
-            if(upperLeftField.isEmpty())
+            if(upperLeftField.isEmpty()  || (skipKing && upperLeftField.getPiece() instanceof King))
             {
                 moves.add(upperLeftField);
                 upperLeftField = chessboard.getUpperLeftField(upperLeftField);
                 continue;
             }
             if(upperLeftField.getPiece().getPieceColor().equals(pieceColor))
+            {
+                if(includeProtected)
+                    moves.add(upperLeftField);
                 break;
+            }
             else
                 moves.add(upperLeftField);
             break;
@@ -95,14 +112,18 @@ public class Queen implements Piece {
         ChessField lowerLeftField = chessboard.getLowerLeftField(currentField);
         while(lowerLeftField!=null)
         {
-            if(lowerLeftField.isEmpty())
+            if(lowerLeftField.isEmpty()  || (skipKing && lowerLeftField.getPiece() instanceof King))
             {
                 moves.add(lowerLeftField);
                 lowerLeftField = chessboard.getLowerLeftField(lowerLeftField);
                 continue;
             }
             if(lowerLeftField.getPiece().getPieceColor().equals(pieceColor))
+            {
+                if(includeProtected)
+                    moves.add(lowerLeftField);
                 break;
+            }
             else
                 moves.add(lowerLeftField);
             break;
@@ -111,14 +132,18 @@ public class Queen implements Piece {
         ChessField lowerRightField = chessboard.getLowerRightField(currentField);
         while(lowerRightField!=null)
         {
-            if(lowerRightField.isEmpty())
+            if(lowerRightField.isEmpty()  || (skipKing && lowerRightField.getPiece() instanceof King))
             {
                 moves.add(lowerRightField);
                 lowerRightField = chessboard.getLowerRightField(lowerRightField);
                 continue;
             }
             if(lowerRightField.getPiece().getPieceColor().equals(pieceColor))
+            {
+                if(includeProtected)
+                    moves.add(lowerRightField);
                 break;
+            }
             else
                 moves.add(lowerRightField);
             break;
@@ -127,7 +152,7 @@ public class Queen implements Piece {
         return moves;
     }
 
-    private List<ChessField> getRookLikeFields(Chessboard chessboard)
+    private List<ChessField> getRookLikeFields(Chessboard chessboard, boolean skipKing, boolean includeProtected)
     {
         List<ChessField> moves = new ArrayList<>();
         ChessField currentField = chessboard.getLocation(this);
@@ -135,14 +160,18 @@ public class Queen implements Piece {
         ChessField upperField = chessboard.getUpperField(currentField);
         while(upperField!=null)
         {
-            if(upperField.isEmpty())
+            if(upperField.isEmpty()  || (skipKing && upperField.getPiece() instanceof King))
             {
                 moves.add(upperField);
                 upperField = chessboard.getUpperField(upperField);
                 continue;
             }
             if(upperField.getPiece().getPieceColor().equals(pieceColor))
+            {
+                if(includeProtected)
+                    moves.add(upperField);
                 break;
+            }
             else
                 moves.add(upperField);
             break;
@@ -151,14 +180,18 @@ public class Queen implements Piece {
         ChessField leftField = chessboard.getLeftField(currentField);
         while(leftField!=null)
         {
-            if(leftField.isEmpty())
+            if(leftField.isEmpty()  || (skipKing && leftField.getPiece() instanceof King))
             {
                 moves.add(leftField);
                 leftField = chessboard.getLeftField(leftField);
                 continue;
             }
             if(leftField.getPiece().getPieceColor().equals(pieceColor))
+            {
+                if(includeProtected)
+                    moves.add(leftField);
                 break;
+            }
             else
                 moves.add(leftField);
             break;
@@ -167,14 +200,18 @@ public class Queen implements Piece {
         ChessField lowerField = chessboard.getLowerField(currentField);
         while(lowerField!=null)
         {
-            if(lowerField.isEmpty())
+            if(lowerField.isEmpty()  || (skipKing && lowerField.getPiece() instanceof King))
             {
                 moves.add(lowerField);
                 lowerField = chessboard.getLowerField(lowerField);
                 continue;
             }
             if(lowerField.getPiece().getPieceColor().equals(pieceColor))
+            {
+                if(includeProtected)
+                    moves.add(lowerField);
                 break;
+            }
             else
                 moves.add(lowerField);
             break;
@@ -183,14 +220,18 @@ public class Queen implements Piece {
         ChessField rightField = chessboard.getRightField(currentField);
         while(rightField!=null)
         {
-            if(rightField.isEmpty())
+            if(rightField.isEmpty()  || (skipKing && rightField.getPiece() instanceof King))
             {
                 moves.add(rightField);
                 rightField = chessboard.getRightField(rightField);
                 continue;
             }
             if(rightField.getPiece().getPieceColor().equals(pieceColor))
+            {
+                if(includeProtected)
+                    moves.add(rightField);
                 break;
+            }
             else
                 moves.add(rightField);
             break;

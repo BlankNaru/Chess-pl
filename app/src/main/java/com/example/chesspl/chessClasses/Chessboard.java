@@ -1,19 +1,32 @@
 package com.example.chesspl.chessClasses;
 
+import static com.example.chesspl.chessClasses.PieceColor.WHITE;
+import static com.example.chesspl.chessClasses.PieceColor.BLACK;
+
 import android.app.Activity;
 import android.view.View;
 import android.widget.GridLayout;
 
 import com.example.chesspl.ChessHelper;
+import com.example.chesspl.chessClasses.figureClasses.Bishop;
+import com.example.chesspl.chessClasses.figureClasses.King;
+import com.example.chesspl.chessClasses.figureClasses.Knight;
+import com.example.chesspl.chessClasses.figureClasses.Pawn;
+import com.example.chesspl.chessClasses.figureClasses.Piece;
+import com.example.chesspl.chessClasses.figureClasses.Queen;
+import com.example.chesspl.chessClasses.figureClasses.Rook;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class Chessboard {
 
     private List<List<ChessField>> fields;
     private List<ChessField> possibleMoves = null;
     private boolean empty;
+    private PieceColor playerToMove = WHITE;
+    private String moveHistory = "";
 
     public Chessboard(boolean empty, GridLayout chessboardLayout, Activity activity) {
         this.empty = empty;
@@ -40,15 +53,15 @@ public class Chessboard {
 
         // WHITE
         for (int i = 0; i < 8; i++)
-            fields.get(6).get(i).setPiece(new Pawn(PieceColor.WHITE));
-        fields.get(7).get(0).setPiece(new Rook(PieceColor.WHITE));
-        fields.get(7).get(1).setPiece(new Knight(PieceColor.WHITE));
-        fields.get(7).get(2).setPiece(new Bishop(PieceColor.WHITE));
-        fields.get(7).get(3).setPiece(new Queen(PieceColor.WHITE));
-        fields.get(7).get(4).setPiece(new King(PieceColor.WHITE));
-        fields.get(7).get(5).setPiece(new Bishop(PieceColor.WHITE));
-        fields.get(7).get(6).setPiece(new Knight(PieceColor.WHITE));
-        fields.get(7).get(7).setPiece(new Rook(PieceColor.WHITE));
+            fields.get(6).get(i).setPiece(new Pawn(WHITE));
+        fields.get(7).get(0).setPiece(new Rook(WHITE));
+        fields.get(7).get(1).setPiece(new Knight(WHITE));
+        fields.get(7).get(2).setPiece(new Bishop(WHITE));
+        fields.get(7).get(3).setPiece(new Queen(WHITE));
+        fields.get(7).get(4).setPiece(new King(WHITE));
+        fields.get(7).get(5).setPiece(new Bishop(WHITE));
+        fields.get(7).get(6).setPiece(new Knight(WHITE));
+        fields.get(7).get(7).setPiece(new Rook(WHITE));
 
         // BLACK
         for (int i = 0; i < 8; i++)
@@ -61,6 +74,13 @@ public class Chessboard {
         fields.get(0).get(5).setPiece(new Bishop(PieceColor.BLACK));
         fields.get(0).get(6).setPiece(new Knight(PieceColor.BLACK));
         fields.get(0).get(7).setPiece(new Rook(PieceColor.BLACK));
+
+//        fields.get(0).get(7).setPiece(new King(BLACK));
+//        fields.get(0).get(1).setPiece(new Rook(BLACK));
+//        fields.get(5).get(1).setPiece(new Rook(BLACK));
+//        fields.get(6).get(1).setPiece(new Rook(WHITE));
+//        fields.get(7).get(1).setPiece(new King(WHITE));
+//        fields.get(6).get(2).setPiece(new Pawn(WHITE));
     }
 
     public void setNewPiece(int row, int col, Piece piece) {
@@ -75,6 +95,8 @@ public class Chessboard {
                     ChessField oldField = getLocation(piece);
                     field.setPiece(piece);
                     oldField.setPiece(null);
+                    moveHistory += oldField.getCoordinates() + "->" + coordinates + " ";
+                    break;
                 }
     }
 
@@ -210,7 +232,7 @@ public class Chessboard {
         for (int i = 0; i < 8; i++)
             for (int j = 0; j < 8; j++)
                 if (fields.get(i).get(j) == startingField) {
-                    if (j > 0 && i < 6)
+                    if (j > 0 && i < 7)
                         return fields.get(i + 1).get(j - 1);
                     else
                         return null;
@@ -225,7 +247,7 @@ public class Chessboard {
         for (int i = 0; i < 8; i++)
             for (int j = 0; j < 8; j++)
                 if (fields.get(i).get(j) == startingField) {
-                    if (j < 6 && i < 6)
+                    if (j < 7 && i < 7)
                         return fields.get(i + 1).get(j + 1);
                     else
                         return null;
@@ -272,17 +294,24 @@ public class Chessboard {
     }
 
     public void onClick(View view) {
+        ChessField clickedTile = getLocation(view);
+        if((clickedTile.getPiece() == null || !clickedTile.getPiece().getPieceColor().equals(playerToMove)) && !isSomethingClicked())
+            return;
         if (possibleMoves == null)
-            getLocation(view).onCLick(this);
-        else if (possibleMoves.contains(getLocation(view))) {
-            setPiece(getLocation(view).getCoordinates(), findClickedField().getPiece());
-            declick();
+            clickedTile.onCLick(this);
+        else if (possibleMoves.contains(clickedTile)) {
+            findClickedField().getPiece().setAsMoved();
+            setPiece(clickedTile.getCoordinates(), findClickedField().getPiece());
+            deClick();
+            setNextPlayer();
+//            if(checkIfMated(playerToMove))
+//                fields.get(7).get(7).setPiece(new Pawn(WHITE));
         } else
-            declick();
+            deClick();
 
     }
 
-    public void declick() {
+    public void deClick() {
         for (ChessField field : possibleMoves)
             field.clearMovement();
         for (List<ChessField> list : fields) {
@@ -306,4 +335,52 @@ public class Chessboard {
         for (ChessField field : possibleMoves)
             field.markAsPossibleToMove();
     }
+
+    public void setNextPlayer()
+    {
+        if(playerToMove.equals(WHITE))
+            playerToMove = BLACK;
+        else
+            playerToMove = WHITE;
+    }
+
+    public List<ChessField> getAllMovesForColor(PieceColor color)
+    {
+        List<ChessField> moves = new ArrayList<>();
+        for(List<ChessField> row : fields)
+            for(ChessField field : row)
+                if(!field.isEmpty() && field.getPiece().getPieceColor().equals(color))
+                    moves.addAll(field.getPiece().getMoves(this, true, true, false));
+
+        moves = moves.stream().distinct().collect(Collectors.toList());
+        return moves;
+    }
+
+    public boolean checkIfChecked(PieceColor color)
+    {
+        Piece checkedKing = null;
+        for (List<ChessField> row : fields)
+            for (ChessField field : row)
+                if (field.getPiece() instanceof King && field.getPiece().getPieceColor().equals(color))
+                {
+                    checkedKing = field.getPiece();
+                    break;
+                }
+        List<ChessField> checkedFields = getAllMovesForColor(checkedKing.getPieceColor()==WHITE? BLACK : WHITE);
+        return checkedFields.contains(getLocation(checkedKing));
+    }
+
+    public boolean checkIfDraw(PieceColor color)
+    {
+return false;
+    }
+
+    public boolean checkIfMated(PieceColor color)
+    {
+        if(!checkIfChecked(color))
+            return false;
+        List<ChessField> possibleMoves = getAllMovesForColor(color);
+        return !possibleMoves.isEmpty();
+    }
+
 }
