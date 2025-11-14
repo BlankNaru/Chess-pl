@@ -61,9 +61,9 @@ public class Puzzle extends AppCompatActivity
 
 
         chessboard = new Chessboard(true, chessboardLayout, this);
-        ChessHelper.generateFields(chessboardLayout, this, chessboard, () ->
+        PuzzleHelper.generateFields(chessboardLayout, this, chessboard, () ->
         {
-            ChessHelper.enableFieldClickListeners(chessboard, pieceRecyclerView);
+            PuzzleHelper.enableFieldClickListeners(chessboard, pieceRecyclerView);
         });
     }
 }

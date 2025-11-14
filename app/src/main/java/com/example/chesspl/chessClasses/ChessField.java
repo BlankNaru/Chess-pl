@@ -23,10 +23,6 @@ public class ChessField {
         number = field.substring(1);
     }
 
-    public FrameLayout getView()
-    {
-        return view;
-    }
 
     public ImageView getPieceView()
     {

@@ -8,6 +8,7 @@ import android.view.View;
 import android.widget.GridLayout;
 
 import com.example.chesspl.ChessHelper;
+import com.example.chesspl.PuzzleHelper;
 import com.example.chesspl.chessClasses.figureClasses.Bishop;
 import com.example.chesspl.chessClasses.figureClasses.King;
 import com.example.chesspl.chessClasses.figureClasses.Knight;
@@ -33,7 +34,7 @@ public class Chessboard {
     {
         this.empty = empty;
         fieldsInit();
-        ChessHelper.generateFields(chessboardLayout, activity, this,null);
+        ChessHelper.generateFields(chessboardLayout, activity, this);
     }
 
     public void fieldsInit() {

@@ -8,7 +8,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.chesspl.chessClasses.Chessboard;
 import com.example.chesspl.chessClasses.ChessField;
 
-public class ChessHelper
+public class PuzzleHelper
 {
 
     public static void generateFields(android.widget.GridLayout chessboardLayout, Activity activity,
