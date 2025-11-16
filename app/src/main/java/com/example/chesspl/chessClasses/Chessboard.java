@@ -1,13 +1,20 @@
 package com.example.chesspl.chessClasses;
 
-import static com.example.chesspl.chessClasses.PieceColor.WHITE;
 import static com.example.chesspl.chessClasses.PieceColor.BLACK;
+import static com.example.chesspl.chessClasses.PieceColor.WHITE;
 
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.graphics.Color;
+import android.util.TypedValue;
+import android.view.Gravity;
 import android.view.View;
 import android.widget.GridLayout;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
 
 import com.example.chesspl.ChessHelper;
+import com.example.chesspl.R;
 import com.example.chesspl.chessClasses.figureClasses.Bishop;
 import com.example.chesspl.chessClasses.figureClasses.King;
 import com.example.chesspl.chessClasses.figureClasses.Knight;
@@ -27,11 +34,22 @@ public class Chessboard {
     private boolean empty;
     private PieceColor playerToMove = WHITE;
     private String moveHistory = "";
+    private GameType gameType = GameType.NONE;
+    private Activity activity;
 
     public Chessboard(boolean empty, GridLayout chessboardLayout, Activity activity) {
         this.empty = empty;
+        this.activity = activity;
         fieldsInit();
         ChessHelper.generateFields(chessboardLayout, activity, this);
+    }
+
+    public Chessboard(boolean empty, GridLayout chessboardLayout, Activity activity, GameType gameType) {
+        this.empty = empty;
+        this.activity = activity;
+        fieldsInit();
+        ChessHelper.generateFields(chessboardLayout, activity, this);
+        this.gameType = gameType;
     }
 
     public void fieldsInit() {
@@ -52,28 +70,28 @@ public class Chessboard {
             return;
 
         // WHITE
-        for (int i = 0; i < 8; i++)
-            fields.get(6).get(i).setPiece(new Pawn(WHITE));
-        fields.get(7).get(0).setPiece(new Rook(WHITE));
-        fields.get(7).get(1).setPiece(new Knight(WHITE));
-        fields.get(7).get(2).setPiece(new Bishop(WHITE));
-        fields.get(7).get(3).setPiece(new Queen(WHITE));
-        fields.get(7).get(4).setPiece(new King(WHITE));
-        fields.get(7).get(5).setPiece(new Bishop(WHITE));
-        fields.get(7).get(6).setPiece(new Knight(WHITE));
-        fields.get(7).get(7).setPiece(new Rook(WHITE));
+//        for (int i = 0; i < 8; i++)
+//            fields.get(6).get(i).setPiece(new Pawn(WHITE), gameType);
+//        fields.get(7).get(0).setPiece(new Rook(WHITE), gameType);
+//        fields.get(7).get(1).setPiece(new Knight(WHITE), gameType);
+//        fields.get(7).get(2).setPiece(new Bishop(WHITE), gameType);
+//        fields.get(7).get(3).setPiece(new Queen(WHITE), gameType);
+        fields.get(7).get(4).setPiece(new King(WHITE), gameType);
+//        fields.get(7).get(5).setPiece(new Bishop(WHITE), gameType);
+//        fields.get(7).get(6).setPiece(new Knight(WHITE), gameType);
+//        fields.get(7).get(7).setPiece(new Rook(WHITE), gameType);
 
         // BLACK
         for (int i = 0; i < 8; i++)
-            fields.get(1).get(i).setPiece(new Pawn(PieceColor.BLACK));
-        fields.get(0).get(0).setPiece(new Rook(PieceColor.BLACK));
-        fields.get(0).get(1).setPiece(new Knight(PieceColor.BLACK));
-        fields.get(0).get(2).setPiece(new Bishop(PieceColor.BLACK));
-        fields.get(0).get(4).setPiece(new Queen(PieceColor.BLACK));
-        fields.get(0).get(3).setPiece(new King(PieceColor.BLACK));
-        fields.get(0).get(5).setPiece(new Bishop(PieceColor.BLACK));
-        fields.get(0).get(6).setPiece(new Knight(PieceColor.BLACK));
-        fields.get(0).get(7).setPiece(new Rook(PieceColor.BLACK));
+            fields.get(1).get(i).setPiece(new Pawn(PieceColor.BLACK), gameType);
+//        fields.get(0).get(0).setPiece(new Rook(PieceColor.BLACK), gameType);
+//        fields.get(0).get(1).setPiece(new Knight(PieceColor.BLACK), gameType);
+//        fields.get(0).get(2).setPiece(new Bishop(PieceColor.BLACK), gameType);
+//        fields.get(0).get(4).setPiece(new Queen(PieceColor.BLACK), gameType);
+        fields.get(0).get(3).setPiece(new King(PieceColor.BLACK), gameType);
+//        fields.get(0).get(5).setPiece(new Bishop(PieceColor.BLACK), gameType);
+//        fields.get(0).get(6).setPiece(new Knight(PieceColor.BLACK), gameType);
+//        fields.get(0).get(7).setPiece(new Rook(PieceColor.BLACK), gameType);
 
 //        fields.get(0).get(7).setPiece(new King(BLACK));
 //        fields.get(0).get(1).setPiece(new Rook(BLACK));
@@ -93,9 +111,20 @@ public class Chessboard {
                 if (field.getCoordinates().equals(coordinates)) {
                     takePiece(field);
                     ChessField oldField = getLocation(piece);
-                    field.setPiece(piece);
+                    field.setPiece(piece, gameType);
                     oldField.setPiece(null);
                     moveHistory += oldField.getCoordinates() + "->" + coordinates + " ";
+                    break;
+                }
+    }
+
+    public void setPromotedPiece(String coordinates, Piece piece)
+    {
+        for (List<ChessField> row : fields)
+            for (ChessField field : row)
+                if (field.getCoordinates().equals(coordinates)) {
+                    takePiece(field);
+                    field.setPiece(piece, gameType);
                     break;
                 }
     }
@@ -303,12 +332,25 @@ public class Chessboard {
             findClickedField().getPiece().setAsMoved();
             setPiece(clickedTile.getCoordinates(), findClickedField().getPiece());
             deClick();
+            if(pawnOnLastRow() != null)
+                showPromotionDialog(pawnOnLastRow());
             setNextPlayer();
 //            if(checkIfMated(playerToMove))
 //                fields.get(7).get(7).setPiece(new Pawn(WHITE));
         } else
             deClick();
 
+    }
+
+    private ChessField pawnOnLastRow() {
+        for(int i=0; i<8; i++)
+        {
+            if(fields.get(0).get(i).getPiece() != null && fields.get(0).get(i).getPiece() instanceof Pawn)
+                return fields.get(0).get(i);
+            if(fields.get(7).get(i).getPiece() != null && fields.get(7).get(i).getPiece() instanceof Pawn)
+                return fields.get(7).get(i);
+        }
+        return null;
     }
 
     public void deClick() {
@@ -381,6 +423,115 @@ return false;
             return false;
         List<ChessField> possibleMoves = getAllMovesForColor(color);
         return !possibleMoves.isEmpty();
+    }
+
+    private void showPromotionDialog(ChessField field) {
+        LinearLayout layout = new LinearLayout(activity);
+        layout.setOrientation(LinearLayout.HORIZONTAL);
+        layout.setPadding(16, 16, 16, 16);
+        layout.setGravity(Gravity.CENTER);
+
+        int size = (int) TypedValue.applyDimension(
+                TypedValue.COMPLEX_UNIT_DIP,
+                60, // 60dp
+                activity.getResources().getDisplayMetrics()
+        );
+
+        int margin = (int) TypedValue.applyDimension(
+                TypedValue.COMPLEX_UNIT_DIP,
+                8, // 8dp
+                activity.getResources().getDisplayMetrics()
+        );
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(activity);
+        builder.setView(layout);
+        builder.setCancelable(false);
+
+        final AlertDialog dialog = builder.create();
+
+        List<ImageView> drawables = getDrawablesForPromotion();
+        for(int i = 0; i < 4; i++) {
+            LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(size, size);
+            params.setMargins(margin, margin, margin, margin);
+            drawables.get(i).setLayoutParams(params);
+
+            int index = i;
+            PieceColor color = playerToMove;
+            drawables.get(i).setOnClickListener(v -> {
+                if(index == 0)
+                    setPromotedPiece(field.getCoordinates(), new Queen(color));
+                if(index == 1)
+                    setPromotedPiece(field.getCoordinates(), new Rook(color));
+                if(index == 2)
+                    setPromotedPiece(field.getCoordinates(), new Bishop(color));
+                if(index == 3)
+                    setPromotedPiece(field.getCoordinates(), new Knight(color));
+                dialog.dismiss();
+            });
+
+            layout.addView(drawables.get(i));
+        }
+
+        dialog.show();
+    }
+
+    private List<ImageView> getDrawablesForPromotion()
+    {
+        List<ImageView> figures = new ArrayList<>();
+
+        // QUEEN
+        ImageView promotionView = new ImageView(activity);
+        promotionView.setImageResource(R.drawable.queen);
+        promotionView.setVisibility(View.VISIBLE);
+        if(playerToMove == WHITE)
+            promotionView.setColorFilter(Color.WHITE);
+        else
+        {
+            promotionView.setColorFilter(Color.BLACK);
+            promotionView.setRotation(180f);
+        }
+        figures.add(promotionView);
+
+        // ROOK
+        promotionView = new ImageView(activity);
+        promotionView.setImageResource(R.drawable.rook);
+        promotionView.setVisibility(View.VISIBLE);
+        if(playerToMove == WHITE)
+            promotionView.setColorFilter(Color.WHITE);
+        else
+        {
+            promotionView.setColorFilter(Color.BLACK);
+            promotionView.setRotation(180f);
+        }
+        figures.add(promotionView);
+
+        // BISHOP
+        promotionView = new ImageView(activity);
+        promotionView.setImageResource(R.drawable.bishop);
+        promotionView.setVisibility(View.VISIBLE);
+        if(playerToMove == WHITE)
+            promotionView.setColorFilter(Color.WHITE);
+        else
+        {
+            promotionView.setColorFilter(Color.BLACK);
+            promotionView.setRotation(180f);
+        }
+        figures.add(promotionView);
+
+        // KNIGHT
+        promotionView = new ImageView(activity);
+        promotionView.setImageResource(R.drawable.knight);
+        promotionView.setVisibility(View.VISIBLE);
+        if(playerToMove == WHITE)
+            promotionView.setColorFilter(Color.WHITE);
+        else
+        {
+            promotionView.setColorFilter(Color.BLACK);
+            promotionView.setRotation(180f);
+        }
+        figures.add(promotionView);
+
+        return figures;
     }
 
 }

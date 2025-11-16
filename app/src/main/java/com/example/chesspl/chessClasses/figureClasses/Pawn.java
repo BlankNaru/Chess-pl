@@ -7,7 +7,9 @@ import android.widget.ImageView;
 import com.example.chesspl.R;
 import com.example.chesspl.chessClasses.ChessField;
 import com.example.chesspl.chessClasses.Chessboard;
+import com.example.chesspl.chessClasses.GameType;
 import com.example.chesspl.chessClasses.PieceColor;
+import com.example.chesspl.chessClasses.Simulation;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -35,22 +37,35 @@ public class Pawn implements Piece {
     }
 
     @Override
+    public void setPiece(ImageView pieceView, GameType gameType) {
+        if(gameType == GameType.LOCAL && getPieceColor() == PieceColor.BLACK)
+            pieceView.setRotation(180f);
+        pieceView.setImageResource(getDrawable());
+        pieceView.setColorFilter(getColor());
+        pieceView.setVisibility(View.VISIBLE);
+    }
+
+    @Override
     public List<ChessField> getMoves(Chessboard chessboard, boolean skipEnemyKing, boolean includeProtected, boolean includeDiscoveredCheck) {
         List<ChessField> moves = new ArrayList<>();
         ChessField currentField = chessboard.getLocation(this);
         if(pieceColor.equals(PieceColor.WHITE))
         {
-            ChessField fieldForward = chessboard.getUpperField(currentField);
-            if(fieldForward != null && fieldForward.isEmpty())
+            if(!includeProtected)
             {
-                moves.add(fieldForward);
-                if(isFirstMove)
+                ChessField fieldForward = chessboard.getUpperField(currentField);
+                if(fieldForward != null && fieldForward.isEmpty())
                 {
-                    ChessField fieldDoubleForward = chessboard.getUpperField(fieldForward);
-                    if(isFirstMove && fieldDoubleForward != null && fieldDoubleForward.isEmpty())
-                        moves.add(fieldDoubleForward);
+                    moves.add(fieldForward);
+                    if(isFirstMove)
+                    {
+                        ChessField fieldDoubleForward = chessboard.getUpperField(fieldForward);
+                        if(isFirstMove && fieldDoubleForward != null && fieldDoubleForward.isEmpty())
+                            moves.add(fieldDoubleForward);
+                    }
                 }
             }
+
             ChessField rightAttack = chessboard.getUpperRightField(currentField);
             ChessField leftAttack = chessboard.getUpperLeftField(currentField);
             if(rightAttack != null && rightAttack.getPiece() != null)
@@ -62,15 +77,15 @@ public class Pawn implements Piece {
         }
         else
         {
-            ChessField fieldForward = chessboard.getLowerField(currentField);
-            if(fieldForward != null && fieldForward.isEmpty())
-            {
-                moves.add(fieldForward);
-                if(isFirstMove)
-                {
-                    ChessField fieldDoubleForward = chessboard.getLowerField(fieldForward);
-                    if(isFirstMove && fieldDoubleForward != null && fieldDoubleForward.isEmpty())
-                        moves.add(fieldDoubleForward);
+            if(!includeProtected) {
+                ChessField fieldForward = chessboard.getLowerField(currentField);
+                if (fieldForward != null && fieldForward.isEmpty()) {
+                    moves.add(fieldForward);
+                    if (isFirstMove) {
+                        ChessField fieldDoubleForward = chessboard.getLowerField(fieldForward);
+                        if (isFirstMove && fieldDoubleForward != null && fieldDoubleForward.isEmpty())
+                            moves.add(fieldDoubleForward);
+                    }
                 }
             }
             ChessField rightAttack = chessboard.getLowerRightField(currentField);
@@ -82,6 +97,21 @@ public class Pawn implements Piece {
                 if(leftAttack.getPiece().getPieceColor().equals(PieceColor.WHITE) || (leftAttack.getPiece().getPieceColor().equals(PieceColor.BLACK) && includeProtected))
                     moves.add(leftAttack);
         }
+
+        if(includeDiscoveredCheck)
+        {
+            List<ChessField> resultInCheckFields = new ArrayList<>();
+            for(ChessField move : moves)
+            {
+                Simulation simulation = new Simulation();
+                simulation.startSimulation(chessboard.getLocation(this), move);
+                if(chessboard.checkIfChecked(getPieceColor()))
+                    resultInCheckFields.add(move);
+                simulation.stopSimulation();
+            }
+            moves.removeAll(resultInCheckFields);
+        }
+
         return moves;
     }
 
@@ -106,4 +136,5 @@ public class Pawn implements Piece {
     public boolean hasMoved() {
         return !isFirstMove;
     }
+
 }

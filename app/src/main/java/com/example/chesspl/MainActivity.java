@@ -1,27 +1,30 @@
 package com.example.chesspl;
 
-import android.graphics.Color;
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
-import android.widget.GridLayout;
+import android.widget.Button;
 
-import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
-
-import com.example.chesspl.chessClasses.Chessboard;
 
 public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.game_layout);
+        setContentView(R.layout.main_menu);
 
-        GridLayout chessBoard = findViewById(R.id.chessBoard);
-        Chessboard chessboard = new Chessboard(false, chessBoard, this);
+//        GridLayout chessBoard = findViewById(R.id.chessBoard);
+//        Chessboard chessboard = new Chessboard(false, chessBoard, this);
+
+        Button button = findViewById(R.id.localGame);
+        button.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v)
+            {
+                Intent intent = new Intent(MainActivity.this, LocalGameActivity.class);
+                startActivity(intent);
+            }
+        });
 
     }
 }
