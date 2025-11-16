@@ -54,6 +54,17 @@ public class ChessField {
         this.piece = piece;
         piece.setPiece(pieceView);
     }
+
+    public void setPiece(Piece piece, GameType gameType) {
+        if(piece == null)
+        {
+            pieceView.setImageResource(0);
+            this.piece = null;
+            return;
+        }
+        this.piece = piece;
+        piece.setPiece(pieceView, gameType);
+    }
     public void clearPiece()
     {
         pieceView.setVisibility(View.GONE);

@@ -7,6 +7,7 @@ import android.widget.ImageView;
 import com.example.chesspl.R;
 import com.example.chesspl.chessClasses.ChessField;
 import com.example.chesspl.chessClasses.Chessboard;
+import com.example.chesspl.chessClasses.GameType;
 import com.example.chesspl.chessClasses.PieceColor;
 
 import java.util.ArrayList;
@@ -29,6 +30,15 @@ public class King implements Piece {
 
     @Override
     public void setPiece(ImageView pieceView) {
+        pieceView.setImageResource(getDrawable());
+        pieceView.setColorFilter(getColor());
+        pieceView.setVisibility(View.VISIBLE);
+    }
+
+    @Override
+    public void setPiece(ImageView pieceView, GameType gameType) {
+        if(gameType == GameType.LOCAL && getPieceColor() == PieceColor.BLACK)
+            pieceView.setRotation(180f);
         pieceView.setImageResource(getDrawable());
         pieceView.setColorFilter(getColor());
         pieceView.setVisibility(View.VISIBLE);

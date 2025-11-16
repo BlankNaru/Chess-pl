@@ -7,7 +7,9 @@ import android.widget.ImageView;
 import com.example.chesspl.R;
 import com.example.chesspl.chessClasses.ChessField;
 import com.example.chesspl.chessClasses.Chessboard;
+import com.example.chesspl.chessClasses.GameType;
 import com.example.chesspl.chessClasses.PieceColor;
+import com.example.chesspl.chessClasses.Simulation;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -26,6 +28,14 @@ public class Bishop implements Piece {
 
     @Override
     public void setPiece(ImageView pieceView) {
+        pieceView.setImageResource(getDrawable());
+        pieceView.setColorFilter(getColor());
+        pieceView.setVisibility(View.VISIBLE);
+    }
+    @Override
+    public void setPiece(ImageView pieceView, GameType gameType) {
+        if(gameType == GameType.LOCAL && getPieceColor() == PieceColor.BLACK)
+            pieceView.setRotation(180f);
         pieceView.setImageResource(getDrawable());
         pieceView.setColorFilter(getColor());
         pieceView.setVisibility(View.VISIBLE);
@@ -114,6 +124,20 @@ public class Bishop implements Piece {
             else
                 moves.add(lowerRightField);
             break;
+        }
+
+        if(includeDiscoveredCheck)
+        {
+            List<ChessField> resultInCheckFields = new ArrayList<>();
+            for(ChessField move : moves)
+            {
+                Simulation simulation = new Simulation();
+                simulation.startSimulation(chessboard.getLocation(this), move);
+                if(chessboard.checkIfChecked(getPieceColor()))
+                    resultInCheckFields.add(move);
+                simulation.stopSimulation();
+            }
+            moves.removeAll(resultInCheckFields);
         }
 
         return moves;
