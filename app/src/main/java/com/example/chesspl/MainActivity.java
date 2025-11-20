@@ -23,8 +23,7 @@ public class MainActivity extends AppCompatActivity {
 
         GridLayout chessBoard = findViewById(R.id.chessBoard);
         Chessboard chessboard = new Chessboard(false, chessBoard, this);
-
-        Intent intent = new Intent(MainActivity.this, Puzzle.class);
+        Intent intent = new Intent(MainActivity.this, PuzzleMenu.class);
         startActivity(intent);
 
 

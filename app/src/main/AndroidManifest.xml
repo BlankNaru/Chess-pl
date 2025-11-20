@@ -13,6 +13,12 @@
         android:theme="@style/Theme.ChessPL"
         tools:targetApi="31">
         <activity
+            android:name=".PuzzleList"
+            android:exported="false" />
+        <activity
+            android:name=".PuzzleMenu"
+            android:exported="false" />
+        <activity
             android:name=".Puzzle"
             android:exported="false" />
         <activity
@@ -26,8 +32,7 @@
         </activity>
         <activity
             android:name=".LocalGameActivity"
-            android:exported="true">
-        </activity>
+            android:exported="true" />
     </application>
 
 </manifest>

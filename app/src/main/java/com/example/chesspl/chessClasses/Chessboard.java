@@ -14,6 +14,8 @@ import android.widget.GridLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 
+import androidx.recyclerview.widget.RecyclerView;
+
 import com.example.chesspl.ChessHelper;
 import com.example.chesspl.PuzzleHelper;
 import com.example.chesspl.R;
@@ -30,7 +32,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class Chessboard {
-
     private List<List<ChessField>> fields;
     private List<ChessField> possibleMoves = null;
     private boolean empty;
@@ -121,6 +122,10 @@ public class Chessboard {
                     field.setPiece(piece, gameType);
                     oldField.setPiece(null);
                     moveHistory += oldField.getCoordinates() + "->" + coordinates + " ";
+                    if(moveListener != null)
+                    {
+                        moveListener.onMoveExecuted();
+                    }
                     break;
                 }
     }
@@ -552,6 +557,27 @@ return false;
         figures.add(promotionView);
 
         return figures;
+    }
+
+    public void setFields(List<List<ChessField>> fields)
+    {
+        this.fields = fields;
+    }
+    public interface OnMoveListener
+    {
+        void onMoveExecuted();
+    }
+
+    private OnMoveListener moveListener;
+
+    public void setOnMoveListener(OnMoveListener listener)
+    {
+        this.moveListener = listener;
+    }
+
+    public String getMoveHistory()
+    {
+        return moveHistory;
     }
 
 }
