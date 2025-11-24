@@ -5,7 +5,7 @@
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".MainActivity"
+    tools:context=".activities.MainActivity"
     android:background="@color/almost_black">
 
     <TextView
@@ -50,22 +50,22 @@
         android:layout_marginEnd="20dp" />
 
     <Button
-        android:textSize="20sp"
-        app:cornerRadius="16dp"
         android:id="@+id/submitButton"
         android:layout_width="0dp"
         android:layout_height="50dp"
+        android:layout_marginStart="20dp"
+        android:layout_marginTop="24dp"
+        android:layout_marginEnd="20dp"
+        android:backgroundTint="@color/orange"
         android:text="Zaloguj"
         android:textColor="@color/white"
+        android:textSize="20sp"
         android:textStyle="bold"
-        android:backgroundTint="@color/orange"
-        app:layout_constraintTop_toBottomOf="@id/secondEditText"
-        app:layout_constraintStart_toStartOf="parent"
+        app:cornerRadius="16dp"
         app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="24dp"
-        android:layout_marginStart="20dp"
-        android:layout_marginEnd="20dp"
-        android:layout_marginBottom="16dp" />
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/secondEditText" />
 
     <TextView
         android:id="@+id/passwordText"

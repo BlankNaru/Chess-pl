@@ -147,7 +147,7 @@ public class Rook implements Piece {
     }
 
     @Override
-    public void setAsMoved() {
+    public void setAsMoved(int distance) {
         isFirstMove = false;
     }
 

@@ -7,7 +7,7 @@
     android:orientation="vertical">
 
     <Button
-        android:id="@+id/localGame"
+        android:id="@+id/offlineGame"
         android:layout_width="match_parent"
         android:layout_height="50dp"
         android:layout_marginStart="60dp"
@@ -20,7 +20,7 @@
         android:backgroundTint="@color/orange" />
 
     <Button
-        android:id="@+id/remoteGame"
+        android:id="@+id/onlineGame"
         android:layout_width="match_parent"
         android:layout_height="50dp"
         android:layout_marginStart="60dp"

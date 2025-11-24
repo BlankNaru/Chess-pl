@@ -68,7 +68,7 @@ public class Knight implements Piece {
     }
 
     @Override
-    public void setAsMoved() {
+    public void setAsMoved(int distance) {
 
     }
 

@@ -56,21 +56,21 @@ public class King implements Piece {
         ChessField upperLeftPosition = chessboard.getLeftField(upperPosition);
         ChessField lowerRightPosition = chessboard.getRightField(lowerPosition);
         ChessField lowerLeftPosition = chessboard.getLeftField(lowerPosition);
-        if (upperPosition != null && (upperPosition.isEmpty() || !upperPosition.getPiece().getPieceColor().equals(pieceColor)))
+        if ((upperPosition != null && includeProtected) || (upperPosition != null && (upperPosition.isEmpty() || !upperPosition.getPiece().getPieceColor().equals(pieceColor))))
             moves.add(upperPosition);
-        if (lowerPosition != null && (lowerPosition.isEmpty() || !lowerPosition.getPiece().getPieceColor().equals(pieceColor)))
+        if ((upperPosition != null && includeProtected) || (lowerPosition != null && (lowerPosition.isEmpty() || !lowerPosition.getPiece().getPieceColor().equals(pieceColor))))
             moves.add(lowerPosition);
-        if (rightPosition != null && (rightPosition.isEmpty() || !rightPosition.getPiece().getPieceColor().equals(pieceColor)))
+        if ((upperPosition != null && includeProtected) || (rightPosition != null && (rightPosition.isEmpty() || !rightPosition.getPiece().getPieceColor().equals(pieceColor))))
             moves.add(rightPosition);
-        if (leftPosition != null && (leftPosition.isEmpty() || !leftPosition.getPiece().getPieceColor().equals(pieceColor)))
+        if ((upperPosition != null && includeProtected) || (leftPosition != null && (leftPosition.isEmpty() || !leftPosition.getPiece().getPieceColor().equals(pieceColor))))
             moves.add(leftPosition);
-        if (upperRightPosition != null && (upperRightPosition.isEmpty() || !upperRightPosition.getPiece().getPieceColor().equals(pieceColor)))
+        if ((upperPosition != null && includeProtected) || (upperRightPosition != null && (upperRightPosition.isEmpty() || !upperRightPosition.getPiece().getPieceColor().equals(pieceColor))))
             moves.add(upperRightPosition);
-        if (upperLeftPosition != null && (upperLeftPosition.isEmpty() || !upperLeftPosition.getPiece().getPieceColor().equals(pieceColor)))
+        if ((upperPosition != null && includeProtected) || (upperLeftPosition != null && (upperLeftPosition.isEmpty() || !upperLeftPosition.getPiece().getPieceColor().equals(pieceColor))))
             moves.add(upperLeftPosition);
-        if (lowerRightPosition != null && (lowerRightPosition.isEmpty() || !lowerRightPosition.getPiece().getPieceColor().equals(pieceColor)))
+        if ((upperPosition != null && includeProtected) || (lowerRightPosition != null && (lowerRightPosition.isEmpty() || !lowerRightPosition.getPiece().getPieceColor().equals(pieceColor))))
             moves.add(lowerRightPosition);
-        if (lowerLeftPosition != null && (lowerLeftPosition.isEmpty() || !lowerLeftPosition.getPiece().getPieceColor().equals(pieceColor)))
+        if ((upperPosition != null && includeProtected) || (lowerLeftPosition != null && (lowerLeftPosition.isEmpty() || !lowerLeftPosition.getPiece().getPieceColor().equals(pieceColor))))
             moves.add(lowerLeftPosition);
         if(includeDiscoveredCheck)
         {
@@ -81,7 +81,7 @@ public class King implements Piece {
     }
 
     @Override
-    public void setAsMoved() {
+    public void setAsMoved(int distance) {
         isFirstMove = false;
     }
 
