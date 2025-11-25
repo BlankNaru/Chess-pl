@@ -1,6 +1,5 @@
 package com.example.chesspl.chessClasses;
 
-import static com.example.chesspl.chessClasses.PieceColor.WHITE;
 import static com.example.chesspl.chessClasses.PieceColor.BLACK;
 import static com.example.chesspl.chessClasses.PieceColor.WHITE;
 
@@ -26,23 +25,27 @@ import com.example.chesspl.chessClasses.figureClasses.Pawn;
 import com.example.chesspl.chessClasses.figureClasses.Piece;
 import com.example.chesspl.chessClasses.figureClasses.Queen;
 import com.example.chesspl.chessClasses.figureClasses.Rook;
+import com.example.chesspl.chessClasses.onlineGameClasses.OnlineGameHelper;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
 public class Chessboard {
+
+    private PieceColor playerColorInOnlineGame = null;
+    private OnlineGameHelper onlineGameHelper;
     private List<List<ChessField>> fields;
     private List<ChessField> possibleMoves = null;
     private boolean empty;
     private ChessField selectedField;
     private PieceColor playerToMove = WHITE;
     private String moveHistory = "";
+    private String lastMove = "";
     private GameType gameType = GameType.NONE;
     private Activity activity;
 
-    public Chessboard(boolean empty, GridLayout chessboardLayout, Activity activity)
-    {
+    public Chessboard(boolean empty, GridLayout chessboardLayout, Activity activity) {
         this.empty = empty;
         this.activity = activity;
         fieldsInit();
@@ -55,6 +58,50 @@ public class Chessboard {
         fieldsInit();
         ChessHelper.generateFields(chessboardLayout, activity, this);
         this.gameType = gameType;
+        if(gameType == GameType.ONLINE)
+        {
+            onlineGameHelper = new OnlineGameHelper();
+            onlineGameHelper.connect();
+            onlineGameHelper.setOnColorDefinedListener(color -> {
+                playerColorInOnlineGame = color.equalsIgnoreCase("white")? WHITE:BLACK;
+            });
+            onlineGameHelper.setOnMoveReceivedListener((receivedMove) -> {
+                if(moveHistory.contains(receivedMove))
+                    return;
+                String from = receivedMove.substring(0, 2);
+                String to = receivedMove.substring(4);
+                setPiece(to, getLocation(from).getPiece());
+                setNextPlayer();
+            });
+        }
+    }
+
+    public void onClick(View view) {
+        if(gameType == GameType.ONLINE && playerColorInOnlineGame == null)
+            return;
+        if(gameType == GameType.ONLINE && playerToMove != playerColorInOnlineGame)
+            return;
+        ChessField clickedTile = getLocation(view);
+        if((clickedTile.getPiece() == null || !clickedTile.getPiece().getPieceColor().equals(playerToMove)) && !isSomethingClicked())
+            return;
+        if (possibleMoves == null)
+            clickedTile.onCLick(this);
+        else if (possibleMoves.contains(clickedTile)) {
+            setPiece(clickedTile.getCoordinates(), findClickedField().getPiece());
+            deClick();
+            if(pawnOnLastRow() != null)
+                showPromotionDialog(pawnOnLastRow());
+            setNextPlayer();
+            clearEnPassants(playerToMove);
+            if(gameType == GameType.ONLINE)
+                onlineGameHelper.sendMove(lastMove);
+            if(checkIfDraw(playerToMove))
+                fields.get(7).get(7).setPiece(new Pawn(WHITE));
+            if(checkIfMated(playerToMove))
+                fields.get(7).get(7).setPiece(new Pawn(WHITE));
+        } else
+            deClick();
+
     }
 
     public void fieldsInit() {
@@ -76,27 +123,27 @@ public class Chessboard {
 
         // WHITE
         for (int i = 0; i < 8; i++)
-            fields.get(6).get(i).setPiece(new Pawn(WHITE));
-        fields.get(7).get(0).setPiece(new Rook(WHITE));
-        fields.get(7).get(1).setPiece(new Knight(WHITE));
-        fields.get(7).get(2).setPiece(new Bishop(WHITE));
-        fields.get(7).get(3).setPiece(new Queen(WHITE));
-        fields.get(7).get(4).setPiece(new King(WHITE));
-        fields.get(7).get(5).setPiece(new Bishop(WHITE));
-        fields.get(7).get(6).setPiece(new Knight(WHITE));
-        fields.get(7).get(7).setPiece(new Rook(WHITE));
+            fields.get(6).get(i).setPiece(new Pawn(WHITE), gameType);
+        fields.get(7).get(0).setPiece(new Rook(WHITE), gameType);
+        fields.get(7).get(1).setPiece(new Knight(WHITE), gameType);
+        fields.get(7).get(2).setPiece(new Bishop(WHITE), gameType);
+        fields.get(7).get(3).setPiece(new Queen(WHITE), gameType);
+        fields.get(7).get(4).setPiece(new King(WHITE), gameType);
+        fields.get(7).get(5).setPiece(new Bishop(WHITE), gameType);
+        fields.get(7).get(6).setPiece(new Knight(WHITE), gameType);
+        fields.get(7).get(7).setPiece(new Rook(WHITE), gameType);
 
         // BLACK
         for (int i = 0; i < 8; i++)
-            fields.get(1).get(i).setPiece(new Pawn(PieceColor.BLACK));
-        fields.get(0).get(0).setPiece(new Rook(PieceColor.BLACK));
-        fields.get(0).get(1).setPiece(new Knight(PieceColor.BLACK));
-        fields.get(0).get(2).setPiece(new Bishop(PieceColor.BLACK));
-        fields.get(0).get(4).setPiece(new Queen(PieceColor.BLACK));
-        fields.get(0).get(3).setPiece(new King(PieceColor.BLACK));
-        fields.get(0).get(5).setPiece(new Bishop(PieceColor.BLACK));
-        fields.get(0).get(6).setPiece(new Knight(PieceColor.BLACK));
-        fields.get(0).get(7).setPiece(new Rook(PieceColor.BLACK));
+            fields.get(1).get(i).setPiece(new Pawn(PieceColor.BLACK), gameType);
+        fields.get(0).get(0).setPiece(new Rook(PieceColor.BLACK), gameType);
+        fields.get(0).get(1).setPiece(new Knight(PieceColor.BLACK), gameType);
+        fields.get(0).get(2).setPiece(new Bishop(PieceColor.BLACK), gameType);
+        fields.get(0).get(4).setPiece(new Queen(PieceColor.BLACK), gameType);
+        fields.get(0).get(3).setPiece(new King(PieceColor.BLACK), gameType);
+        fields.get(0).get(5).setPiece(new Bishop(PieceColor.BLACK), gameType);
+        fields.get(0).get(6).setPiece(new Knight(PieceColor.BLACK), gameType);
+        fields.get(0).get(7).setPiece(new Rook(PieceColor.BLACK), gameType);
 
 //        fields.get(0).get(7).setPiece(new King(BLACK));
 //        fields.get(0).get(1).setPiece(new Rook(BLACK));
@@ -106,33 +153,59 @@ public class Chessboard {
 //        fields.get(6).get(2).setPiece(new Pawn(WHITE));
     }
 
-    public void setNewPiece(int row, int col, Piece piece)
-    {
+    public void setNewPiece(int row, int col, Piece piece) {
         fields.get(row).get(col).setPiece(piece);
     }
 
-    public void setPiece(String coordinates, Piece piece)
-    {
-        for(List<ChessField> row : fields)
-            for(ChessField field : row)
-                if(field.getCoordinates().equals(coordinates))
-                {
+    // coordinates - miejsce docelowe
+    // piece - figura dążąca do miejsca docelowego
+    public void setPiece(String coordinates, Piece piece) {
+        piece.setAsMoved(getDistance(coordinates, piece));
+        for (List<ChessField> row : fields)
+            for (ChessField field : row)
+                if (field.getCoordinates().equals(coordinates)) {
+                    checkIfEnPassant(piece);
                     takePiece(field);
                     ChessField oldField = getLocation(piece);
                     field.setPiece(piece, gameType);
                     oldField.setPiece(null);
-                    moveHistory += oldField.getCoordinates() + "->" + coordinates + " ";
-                    if(moveListener != null)
-                    {
-                        moveListener.onMoveExecuted();
-                    }
+                    lastMove = oldField.getCoordinates() + "->" + coordinates;
+                    moveHistory += lastMove + " ";
                     break;
                 }
     }
 
-    public void takePiece(ChessField field)
+    public void clearEnPassants(PieceColor color)
     {
-        field.setPiece(null);
+        for (List<ChessField> row : fields)
+            for (ChessField field : row)
+            {
+                if(field.isEmpty() || field.getPiece().getPieceColor() != color)
+                    continue;
+                if(field.getPiece() instanceof Pawn)
+                    field.getPiece().setAsMoved(0);
+            }
+    }
+
+    public void checkIfEnPassant(Piece piece)
+    {
+        if(! (piece instanceof Pawn))
+            return;
+        if(((Pawn) piece).enPassantOnRight(this, getLocation(piece)))
+            takePiece(getRightField(getLocation(piece)));
+        if(((Pawn) piece).enPassantOnLeft(this, getLocation(piece)))
+            takePiece(getLeftField(getLocation(piece)));
+    }
+
+    public int getDistance(String coordinates, Piece piece) {
+        ChessField from = getLocation(piece);
+        ChessField to = null;
+        for (List<ChessField> row : fields)
+            for (ChessField field : row)
+                if (field.getCoordinates().equals(coordinates))
+                    to = field;
+        return Math.abs(to.getRow() - from.getRow());
+
     }
 
     public void setPromotedPiece(String coordinates, Piece piece)
@@ -144,6 +217,10 @@ public class Chessboard {
                     field.setPiece(piece, gameType);
                     break;
                 }
+    }
+
+    public void takePiece(ChessField field) {
+        field.setPiece(null);
     }
 
     public ChessField getLocation(Piece piece) {
@@ -158,6 +235,14 @@ public class Chessboard {
         for (List<ChessField> row : fields)
             for (ChessField field : row)
                 if (field.getView() == view)
+                    return field;
+        return null;
+    }
+
+    public ChessField getLocation(String coordinates) {
+        for (List<ChessField> row : fields)
+            for (ChessField field : row)
+                if (field.getCoordinates().equalsIgnoreCase(coordinates))
                     return field;
         return null;
     }
@@ -347,25 +432,6 @@ public class Chessboard {
         return null;
     }
 
-    public void onClick(View view) {
-        ChessField clickedTile = getLocation(view);
-        if((clickedTile.getPiece() == null || !clickedTile.getPiece().getPieceColor().equals(playerToMove)) && !isSomethingClicked())
-            return;
-        if (possibleMoves == null)
-            clickedTile.onCLick(this);
-        else if (possibleMoves.contains(clickedTile)) {
-            findClickedField().getPiece().setAsMoved();
-            setPiece(clickedTile.getCoordinates(), findClickedField().getPiece());
-            deClick();
-            if(pawnOnLastRow() != null)
-                showPromotionDialog(pawnOnLastRow());
-            setNextPlayer();
-//            if(checkIfMated(playerToMove))
-//                fields.get(7).get(7).setPiece(new Pawn(WHITE));
-        } else
-            deClick();
-
-    }
 
     private ChessField pawnOnLastRow() {
         for(int i=0; i<8; i++)
@@ -439,7 +505,12 @@ public class Chessboard {
 
     public boolean checkIfDraw(PieceColor color)
     {
-return false;
+        return false;
+    }
+
+    public boolean isEnoughMaterialForPlayer(PieceColor color)
+    {
+        return false;
     }
 
     public boolean checkIfMated(PieceColor color)

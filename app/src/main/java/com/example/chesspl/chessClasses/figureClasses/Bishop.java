@@ -144,7 +144,7 @@ public class Bishop implements Piece {
     }
 
     @Override
-    public void setAsMoved() {
+    public void setAsMoved(int distance) {
 
     }
 

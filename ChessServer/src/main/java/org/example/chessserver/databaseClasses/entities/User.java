@@ -10,13 +10,14 @@ import java.util.Set;
 @Table(name = "users")
 public class User {
 
+    private static int DEFAULT_ELO = 600;
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String username;
     private String email;
-    private int elo;
-    private int gamesPlayed;
+    private int elo = DEFAULT_ELO;
+    private int gamesPlayed = 0;
     private String password;
     @ManyToMany
     @JoinTable(
