@@ -1,4 +1,7 @@
-package com.example.chesspl;
+package com.example.chesspl.puzzle;
+
+import static com.example.chesspl.chessClasses.PieceColor.BLACK;
+import static com.example.chesspl.chessClasses.PieceColor.WHITE;
 
 import android.app.Activity;
 import android.graphics.Color;
@@ -9,6 +12,8 @@ import android.widget.ImageView;
 
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.chesspl.PieceAdapter;
+import com.example.chesspl.R;
 import com.example.chesspl.chessClasses.Chessboard;
 import com.example.chesspl.chessClasses.ChessField;
 import com.example.chesspl.chessClasses.PieceColor;
@@ -20,11 +25,13 @@ import com.example.chesspl.chessClasses.figureClasses.Piece;
 import com.example.chesspl.chessClasses.figureClasses.Queen;
 import com.example.chesspl.chessClasses.figureClasses.Rook;
 
-import java.util.List;
-
 public class PuzzleHelper {
 
-    public static void generateFields(GridLayout chessboardLayout, Activity activity, Chessboard chessboard, RecyclerView pieceRecyclerView) {
+    private static long lastClickTime = 0;
+    private static ChessField lastClickedField = null;
+    private final static long DOUBLE_CLICK_TIME_DELTA = 300;
+
+    public static void generateFields(GridLayout chessboardLayout, Activity activity, Chessboard chessboard, RecyclerView pieceRecyclerView, PieceAdapter adapter) {
         int size = 8;
 
         chessboardLayout.post(() -> {
@@ -39,7 +46,8 @@ public class PuzzleHelper {
                     setMoveView(activity, chessboard, square, row, col);
                     setPieceView(activity, chessboard, square, row, col);
 
-                    setOnClickAction(square, chessboard, pieceRecyclerView, row, col);
+                    setOnClickAction(square, chessboard, pieceRecyclerView, row, col, adapter);
+
 
                     addViewToLayout(chessboardLayout, cellSize, row, col, square);
                 }
@@ -97,11 +105,13 @@ public class PuzzleHelper {
                     field.setGraphic(pieceView);
 
                     setOnClickAction2(square, chessboard);
+
                     addViewToLayout(chessboardLayout, cellSize, row, col, square);
                 }
             }
         });
     }
+
 
 
     static int getDrawableIdFromPiece(Piece piece) {
@@ -113,6 +123,44 @@ public class PuzzleHelper {
         if (piece instanceof King) return R.drawable.king;
         return 0;
     }
+
+    public static Piece createPieceFromDTO(PieceDTO dto) {
+        PieceColor color = dto.getPieceColor().equals("WHITE") ? PieceColor.WHITE : PieceColor.BLACK;
+        switch(dto.getType()) {
+            case "KING": return new King(color);
+            case "QUEEN": return new Queen(color);
+            case "ROOK": return new Rook(color);
+            case "BISHOP": return new Bishop(color);
+            case "KNIGHT": return new Knight(color);
+            case "PAWN": return new Pawn(color);
+            default: return null;
+        }
+    }
+
+
+
+    public static Piece createPieceFromTypeAndColor(String type, PieceColor color) {
+
+        String normalizedType = type.toUpperCase();
+
+        switch(normalizedType) {
+            case "KING":
+            case "KINGPIECE":
+                return new King(color);
+            case "QUEEN":
+                return new Queen(color);
+            case "ROOK":
+                return new Rook(color);
+            case "BISHOP":
+                return new Bishop(color);
+            case "KNIGHT":
+                return new Knight(color);
+            case "PAWN":
+                return new Pawn(color);
+            default: return null;
+        }
+    }
+
 
 
     private static void setView(Activity activity, Chessboard chessboard, int row, int col, FrameLayout square) {
@@ -165,17 +213,63 @@ public class PuzzleHelper {
         chessboard.getFields().get(row).get(col).setGraphic(pieceView);
     }
 
-    private static void setOnClickAction(FrameLayout square, Chessboard chessboard, RecyclerView pieceRecyclerView, int row, int col) {
+
+    private static void setOnClickAction(FrameLayout square, Chessboard chessboard, RecyclerView pieceRecyclerView, int row, int col, PieceAdapter adapter) {
         square.setOnClickListener(v -> {
-            ChessField field = chessboard.getFields().get(row).get(col);
-            chessboard.setSelectedField(field);
-            pieceRecyclerView.setVisibility(View.VISIBLE);
+            ChessField currentField = chessboard.getFields().get(row).get(col);
+
+            long clickTime = System.currentTimeMillis();
+            long deltaTime = clickTime - lastClickTime;
+
+            if (currentField.equals(lastClickedField) && deltaTime < DOUBLE_CLICK_TIME_DELTA) {
+
+                if (currentField.getPiece() != null) {
+
+                    currentField.setPiece(null);
+
+                    ImageView pieceView = currentField.getPieceView();
+                    if (pieceView != null) {
+                        pieceView.setImageResource(0);
+                        pieceView.setVisibility(View.GONE);
+                    }
+
+                    chessboard.setSelectedField(currentField);
+                    pieceRecyclerView.setVisibility(View.VISIBLE);
+
+                    adapter.notifyDataSetChanged();
+
+                    lastClickTime = 0;
+                    lastClickedField = null;
+
+                } else {
+                    chessboard.setSelectedField(currentField);
+                    pieceRecyclerView.setVisibility(View.VISIBLE);
+
+                    lastClickTime = clickTime;
+                    lastClickedField = currentField;
+                }
+
+            } else {
+
+                chessboard.setSelectedField(currentField);
+                pieceRecyclerView.setVisibility(View.VISIBLE);
+                lastClickTime = clickTime;
+                lastClickedField = currentField;
+            }
         });
     }
 
+
     private static void setOnClickAction2(FrameLayout view, Chessboard chessboard) {
         view.setOnClickListener(chessboard::onClick);
+
+        view.setOnLongClickListener(v -> {
+            chessboard.undoLastMove();
+            return true;
+        });
+
     }
+
 
 
     private static void addViewToLayout(GridLayout chessboardLayout, int cellSize, int row, int col, FrameLayout square) {

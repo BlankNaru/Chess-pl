@@ -1,3 +1,16 @@
 <resources>
     <string name="app_name">ChessPL</string>
+    <string name="select_category">Wybierz Kategorię</string>
+    <string name="select_start_color">Zaczyna</string>
+
+    <string-array name="puzzle_categories">
+        <item>Checkmate in 1</item>
+        <item>Fork</item>
+        <item>Towers Endgame</item>
+    </string-array>
+
+    <string-array name="start_colors">
+        <item>White</item>
+        <item>Black</item>
+    </string-array>
 </resources>

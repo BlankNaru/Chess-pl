@@ -6,6 +6,7 @@ import android.content.Intent;
 import androidx.drawerlayout.widget.DrawerLayout;
 
 import com.example.chesspl.R;
+import com.example.chesspl.puzzle.PuzzleMenu;
 import com.google.android.material.navigation.NavigationView;
 
 public class DrawerHelper {
@@ -30,6 +31,10 @@ public class DrawerHelper {
                 navigateTo(AccountActivity.class);
             } else if (id == R.id.nav_settings) {
                 navigateTo(LocalGameActivity.class);
+            }
+            else if(id == R.id.nav_puzzles)
+            {
+                navigateTo(PuzzleMenu.class);
             }
 
             drawerLayout.closeDrawer(androidx.core.view.GravityCompat.START);

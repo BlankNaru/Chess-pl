@@ -13,10 +13,7 @@ import android.widget.GridLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 
-import androidx.recyclerview.widget.RecyclerView;
-
 import com.example.chesspl.ChessHelper;
-import com.example.chesspl.PuzzleHelper;
 import com.example.chesspl.R;
 import com.example.chesspl.chessClasses.figureClasses.Bishop;
 import com.example.chesspl.chessClasses.figureClasses.King;
@@ -25,6 +22,7 @@ import com.example.chesspl.chessClasses.figureClasses.Pawn;
 import com.example.chesspl.chessClasses.figureClasses.Piece;
 import com.example.chesspl.chessClasses.figureClasses.Queen;
 import com.example.chesspl.chessClasses.figureClasses.Rook;
+import com.example.chesspl.chessClasses.onlineGameClasses.Move;
 import com.example.chesspl.chessClasses.onlineGameClasses.OnlineGameHelper;
 
 import java.util.ArrayList;
@@ -39,12 +37,12 @@ public class Chessboard {
     private List<ChessField> possibleMoves = null;
     private boolean empty;
     private ChessField selectedField;
-    private PieceColor playerToMove = WHITE;
+    public PieceColor playerToMove = WHITE;
     private String moveHistory = "";
     private String lastMove = "";
     private GameType gameType = GameType.NONE;
     private Activity activity;
-
+    private final List<Move> moveHistory2 = new ArrayList<>();
     public Chessboard(boolean empty, GridLayout chessboardLayout, Activity activity) {
         this.empty = empty;
         this.activity = activity;
@@ -76,33 +74,80 @@ public class Chessboard {
         }
     }
 
+    //MARIUSZA
+//    public void onClick(View view) {
+//        if(gameType == GameType.ONLINE && playerColorInOnlineGame == null)
+//            return;
+//        if(gameType == GameType.ONLINE && playerToMove != playerColorInOnlineGame)
+//            return;
+//        ChessField clickedTile = getLocation(view);
+//        if((clickedTile.getPiece() == null || !clickedTile.getPiece().getPieceColor().equals(playerToMove)) && !isSomethingClicked())
+//            return;
+//        if (possibleMoves == null)
+//            clickedTile.onCLick(this);
+//        else if (possibleMoves.contains(clickedTile)) {
+//            setPiece(clickedTile.getCoordinates(), findClickedField().getPiece());
+//            deClick();
+//            if(pawnOnLastRow() != null)
+//                showPromotionDialog(pawnOnLastRow());
+//            setNextPlayer();
+//            clearEnPassants(playerToMove);
+//            if(gameType == GameType.ONLINE)
+//                onlineGameHelper.sendMove(lastMove);
+//            if(checkIfDraw(playerToMove))
+//                fields.get(7).get(7).setPiece(new Pawn(WHITE));
+//            if(checkIfMated(playerToMove))
+//                fields.get(7).get(7).setPiece(new Pawn(WHITE));
+//        } else
+//            deClick();
+//
+//    }
+
+    //MOJE
     public void onClick(View view) {
         if(gameType == GameType.ONLINE && playerColorInOnlineGame == null)
             return;
         if(gameType == GameType.ONLINE && playerToMove != playerColorInOnlineGame)
             return;
+
         ChessField clickedTile = getLocation(view);
+
         if((clickedTile.getPiece() == null || !clickedTile.getPiece().getPieceColor().equals(playerToMove)) && !isSomethingClicked())
             return;
-        if (possibleMoves == null)
+
+        if (possibleMoves == null) {
             clickedTile.onCLick(this);
-        else if (possibleMoves.contains(clickedTile)) {
-            setPiece(clickedTile.getCoordinates(), findClickedField().getPiece());
-            deClick();
-            if(pawnOnLastRow() != null)
-                showPromotionDialog(pawnOnLastRow());
-            setNextPlayer();
-            clearEnPassants(playerToMove);
-            if(gameType == GameType.ONLINE)
-                onlineGameHelper.sendMove(lastMove);
-            if(checkIfDraw(playerToMove))
-                fields.get(7).get(7).setPiece(new Pawn(WHITE));
-            if(checkIfMated(playerToMove))
-                fields.get(7).get(7).setPiece(new Pawn(WHITE));
-        } else
+        } else if (possibleMoves.contains(clickedTile)) {
+            ChessField from = findClickedField();
+            ChessField to = clickedTile;
+            Piece piece = from.getPiece();
+
+
+            moveHistory2.add(new Move(from, to, piece));
+
+
+            setPiece(to.getCoordinates(), piece);
+
             deClick();
 
+            if(pawnOnLastRow() != null)
+                showPromotionDialog(pawnOnLastRow());
+
+            setNextPlayer();
+            clearEnPassants(playerToMove);
+
+            if(gameType == GameType.ONLINE)
+                onlineGameHelper.sendMove(lastMove);
+
+//            if(checkIfDraw(playerToMove))
+//                fields.get(7).get(7).setPiece(new Pawn(WHITE));
+//            if(checkIfMated(playerToMove))
+//                fields.get(7).get(7).setPiece(new Pawn(WHITE));
+        } else {
+            deClick();
+        }
     }
+
 
     public void fieldsInit() {
         fields = new ArrayList<>();
@@ -469,6 +514,8 @@ public class Chessboard {
             field.markAsPossibleToMove();
     }
 
+
+
     public void setNextPlayer()
     {
         if(playerToMove.equals(WHITE))
@@ -649,6 +696,124 @@ public class Chessboard {
     public String getMoveHistory()
     {
         return moveHistory;
+
     }
+
+    public boolean isRookEndgameComposition() {
+        for (List<ChessField> row : fields) {
+            for (ChessField field : row) {
+                Piece piece = field.getPiece();
+
+                if (piece != null) {
+
+                    if (!(piece instanceof King) &&
+                            !(piece instanceof Rook) &&
+                            !(piece instanceof Pawn)) {
+
+                        return false;
+                    }
+                }
+            }
+        }
+
+        return true;
+    }
+    public boolean checkIfForkOccurred() {
+        if (moveHistory2.isEmpty()) {
+            return false;
+        }
+
+
+        Move lastMoveObj = moveHistory2.get(moveHistory2.size() - 1);
+        ChessField toField = lastMoveObj.to;
+        Piece movedPiece = lastMoveObj.piece;
+        PieceColor opponentColor = movedPiece.getPieceColor() == WHITE ? BLACK : WHITE;
+
+        List<ChessField> attackedFields;
+        try {
+
+            attackedFields = movedPiece.getMoves(this, false, false, false);
+        } catch (Exception e) {
+
+            return false;
+        }
+
+        int valuableTargetsHit = 0;
+
+
+        for (ChessField field : attackedFields) {
+            Piece target = field.getPiece();
+
+            if (target != null && target.getPieceColor() == opponentColor) {
+
+                boolean isValuableTarget = !(target instanceof Pawn);
+
+                if (isValuableTarget) {
+                    valuableTargetsHit++;
+                }
+            }
+        }
+
+
+        return valuableTargetsHit >= 2;
+    }
+
+    public void clearMoveHistory() {
+
+        this.moveHistory = "";
+    }
+
+
+    public void clearBoard() {
+
+        for (List<ChessField> row : fields) {
+            for (ChessField field : row) {
+                field.setPiece(null);
+            }
+        }
+
+
+        moveHistory = "";
+        moveHistory2.clear();
+
+        selectedField = null;
+    }
+
+    public void undoLastMove() {
+        if (moveHistory2.isEmpty()) return;
+
+
+        Move lastMoveObj = moveHistory2.remove(moveHistory2.size() - 1);
+
+
+        lastMoveObj.from.setPiece(lastMoveObj.piece);
+        lastMoveObj.to.setPiece(null);
+
+
+        selectedField = lastMoveObj.from;
+
+
+        if(playerToMove.equals(WHITE))
+            playerToMove = BLACK;
+        else
+            playerToMove = WHITE;
+
+        String lastMoveString = lastMoveObj.from.getCoordinates() + "->" + lastMoveObj.to.getCoordinates();
+        String fullMoveEntry = lastMoveString + " ";
+
+        if (moveHistory.endsWith(fullMoveEntry)) {
+            moveHistory = moveHistory.substring(0, moveHistory.length() - fullMoveEntry.length());
+        }
+
+
+        if (!moveHistory2.isEmpty()) {
+
+            Move newLastMoveObj = moveHistory2.get(moveHistory2.size() - 1);
+            this.lastMove = newLastMoveObj.from.getCoordinates() + "->" + newLastMoveObj.to.getCoordinates();
+        } else {
+            this.lastMove = "";
+        }
+    }
+
 
 }

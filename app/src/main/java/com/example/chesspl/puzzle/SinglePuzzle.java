@@ -1,4 +1,4 @@
-package com.example.chesspl;
+package com.example.chesspl.puzzle;
 
 import static com.example.chesspl.chessClasses.PieceColor.WHITE;
 
@@ -13,20 +13,9 @@ public class SinglePuzzle
     private List<List<ChessField>> fields;
     private PieceColor playerToMove = WHITE;
     private PuzzleCategory category;
-
-    public String getMoveHistory() {
-        return moveHistory;
-    }
-
-    public void setMoveHistory(String moveHistory) {
-        this.moveHistory = moveHistory;
-    }
-
     private String moveHistory = "";
 
-
     public SinglePuzzle() {}
-
 
     public SinglePuzzle(List<List<ChessField>> fields, PieceColor playerToMove, PuzzleCategory category) {
         this.fields = fields;
@@ -42,6 +31,13 @@ public class SinglePuzzle
         this.fields = fields;
     }
 
+    public String getMoveHistory() {
+        return moveHistory;
+    }
+
+    public void setMoveHistory(String moveHistory) {
+        this.moveHistory = moveHistory;
+    }
 
 
     public PuzzleCategory getCategory() {

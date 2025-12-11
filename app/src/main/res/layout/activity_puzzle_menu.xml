@@ -6,7 +6,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/almost_black"
-    tools:context=".PuzzleMenu">
+    tools:context=".puzzle.PuzzleMenu">
 
     <LinearLayout
         android:id="@+id/centerContainer"
@@ -47,13 +47,13 @@
             android:id="@+id/listPuzzleButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Puzzle List"
-            android:textSize="20sp"
+            android:backgroundTint="@color/orange"
             android:paddingLeft="40dp"
-            android:paddingRight="40dp"
             android:paddingTop="14dp"
+            android:paddingRight="40dp"
             android:paddingBottom="14dp"
-            android:backgroundTint="@color/orange" />
+            android:text="Solve Puzzle"
+            android:textSize="20sp" />
 
     </LinearLayout>
 

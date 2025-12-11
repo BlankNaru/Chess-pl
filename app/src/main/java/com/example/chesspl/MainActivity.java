@@ -1,18 +1,13 @@
 package com.example.chesspl;
 
 import android.content.Intent;
-import android.graphics.Color;
 import android.os.Bundle;
-import android.view.View;
 import android.widget.GridLayout;
 
-import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
 
 import com.example.chesspl.chessClasses.Chessboard;
+import com.example.chesspl.puzzle.PuzzleMenu;
 
 public class MainActivity extends AppCompatActivity {
 

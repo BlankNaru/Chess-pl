@@ -10,4 +10,10 @@
         android:title="Settings"
         android:icon="@drawable/crown"/>
 
+    <item
+        android:id="@+id/nav_puzzles"
+        android:title="Puzzles"
+        android:icon="@drawable/baseline_question_mark_24"/>
+
+
 </menu>

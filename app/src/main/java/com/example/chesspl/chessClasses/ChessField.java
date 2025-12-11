@@ -16,6 +16,7 @@ public class ChessField {
     private ImageView pieceView;
     private ImageView moveView;
     private ImageView highlightFilterView;
+    private Piece previousPiece = null;
 
     public ChessField(String field)
     {
