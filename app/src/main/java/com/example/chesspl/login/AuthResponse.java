@@ -3,6 +3,7 @@ package com.example.chesspl.login;
 public class AuthResponse {
     private String token;
     private String username;
+    private String elo;
 
     public String getToken() {
         return token;
@@ -11,4 +12,5 @@ public class AuthResponse {
     public String getUsername() {
         return username;
     }
+    public String getElo() {return elo;}
 }

@@ -40,6 +40,40 @@ public class ChessHelper {
         });
     }
 
+    public static void generateFields(GridLayout chessboardLayout, Activity activity, Chessboard chessboard, boolean isWhite)
+    {
+
+        if(isWhite)
+        {
+            generateFields(chessboardLayout, activity, chessboard);
+            return;
+        }
+
+        int size = 8;
+
+        chessboardLayout.post(() -> {
+            int cellSize = chessboardLayout.getWidth() / size;
+
+            for (int row = 0; row < size; row++) {
+                for (int col = 0; col < size; col++) {
+
+                    FrameLayout square = new FrameLayout(activity);
+
+                    setView(activity, chessboard, row, col, square);
+                    setHighlightFilterView(activity, chessboard, square, row, col);
+                    setMoveView(activity, chessboard, square, row, col);
+                    setPieceView(activity, chessboard, square, row, col);
+
+                    setOnClickAction(square, chessboard);
+                    addViewToLayout(chessboardLayout, cellSize, 7 - row, 7 - col, square);
+
+
+                }
+            }
+            chessboard.piecesInit();
+        });
+    }
+
     private static void setOnClickAction(FrameLayout view, Chessboard chessboard) {
         view.setOnClickListener(chessboard::onClick);
     }

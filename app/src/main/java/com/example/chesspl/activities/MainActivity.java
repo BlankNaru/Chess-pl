@@ -50,7 +50,18 @@ public class MainActivity extends AppCompatActivity {
                                 .putString("jwt", jwtToken)
                                 .apply();
 
+                        getSharedPreferences("prefs", MODE_PRIVATE)
+                                .edit()
+                                .putString("username", username)
+                                .apply();
+
+                        getSharedPreferences("prefs", MODE_PRIVATE)
+                                .edit()
+                                .putString("elo", response.body().getElo())
+                                .apply();
+
                         Intent intent = new Intent(MainActivity.this, AccountActivity.class);
+                        intent.putExtra("username", username);
                         startActivity(intent);
                     } else {
                         Toast.makeText(MainActivity.this, "Login failed", Toast.LENGTH_SHORT).show();

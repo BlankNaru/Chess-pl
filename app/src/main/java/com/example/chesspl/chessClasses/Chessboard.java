@@ -3,6 +3,7 @@ package com.example.chesspl.chessClasses;
 import static com.example.chesspl.chessClasses.PieceColor.BLACK;
 import static com.example.chesspl.chessClasses.PieceColor.WHITE;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.graphics.Color;
@@ -12,9 +13,16 @@ import android.view.View;
 import android.widget.GridLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.TableLayout;
+import android.widget.TableRow;
+import android.widget.TextView;
+
+import androidx.core.content.ContextCompat;
 
 import com.example.chesspl.ChessHelper;
 import com.example.chesspl.R;
+import com.example.chesspl.activities.ChessTimer;
+import com.example.chesspl.activities.WebSocketManager;
 import com.example.chesspl.chessClasses.figureClasses.Bishop;
 import com.example.chesspl.chessClasses.figureClasses.King;
 import com.example.chesspl.chessClasses.figureClasses.Knight;
@@ -40,7 +48,113 @@ public class Chessboard {
     private String lastMove = "";
     private GameType gameType = GameType.NONE;
     private Activity activity;
+    private boolean end = false;
+    private TableLayout table;
+    private int moveNo = 1;
+    private ChessTimer timerWhite, timerBlack;
+    private PieceColor winner = null;
+    private ImageView white, black;
 
+
+    public void setWinnerImageView(ImageView white, ImageView black)
+    {
+        if(playerColorInOnlineGame == WHITE)
+        {
+            this.white = white;
+            this.black = black;
+        }
+        else
+        {
+            this.white = black;
+            this.black = white;
+        }
+    }
+    public void updateWinner()
+    {
+        timerWhite.pause();
+        timerBlack.pause();
+        if(winner == null)
+        {
+            white.setVisibility(View.VISIBLE);
+            black.setVisibility(View.VISIBLE);
+            white.setImageResource(R.drawable.half_crown);
+            black.setImageResource(R.drawable.half_crown);
+        }
+        else if(winner == WHITE)
+        {
+            white.setVisibility(View.VISIBLE);
+        }
+        else
+        {
+            black.setVisibility(View.VISIBLE);
+        }
+    }
+    public void setTimers(String time, TextView whiteTextView, TextView blackTextView)
+    {
+        timerWhite = new ChessTimer(whiteTextView, Integer.parseInt(time));
+        timerWhite.setOnTimeOutListener(() -> {
+            end = true;
+            winner = BLACK;
+            updateWinner();
+            onlineGameHelper.sendTimeOut("white");
+        });
+        timerBlack = new ChessTimer(blackTextView, Integer.parseInt(time));
+        timerBlack.setOnTimeOutListener(() -> {
+            end = true;
+            winner = WHITE;
+            updateWinner();
+            onlineGameHelper.sendTimeOut("black");
+        });
+        timerWhite.start();
+    }
+
+    public void setMoveTable(TableLayout table)
+    {
+        this.table = table;
+    }
+    @SuppressLint("SetTextI18n")
+    public void updateTable()
+    {
+        if(playerToMove == BLACK)
+        {
+            TableRow row = new TableRow(activity);
+            row.setLayoutParams(new TableRow.LayoutParams(
+                    TableRow.LayoutParams.MATCH_PARENT,
+                    TableRow.LayoutParams.WRAP_CONTENT
+            ));
+
+            TextView cell1 = new TextView(activity);
+            cell1.setText(moveNo + ".");
+            cell1.setGravity(Gravity.CENTER);
+            cell1.setTextColor(ContextCompat.getColor(activity, R.color.orange));
+            cell1.setTextSize(20);
+            row.addView(cell1);
+
+            TextView cell2 = new TextView(activity);
+            cell2.setText(lastMove.trim());
+            cell2.setGravity(Gravity.CENTER);
+            cell2.setTextColor(ContextCompat.getColor(activity, R.color.white));
+            cell2.setTextSize(20);
+            row.addView(cell2);
+
+            TextView cell3 = new TextView(activity);
+            cell3.setText("");
+            cell3.setGravity(Gravity.CENTER);
+            cell3.setTextColor(ContextCompat.getColor(activity, R.color.white));
+            cell3.setTextSize(20);
+            row.addView(cell3);
+
+            table.addView(row);
+            moveNo++;
+        }
+        else
+        {
+            int rowCount = table.getChildCount();
+            TableRow lastRow = (TableRow) table.getChildAt(rowCount - 1);
+            TextView blackMove  = (TextView) lastRow.getChildAt(2);
+            blackMove.setText(lastMove.trim());
+        }
+    }
     public Chessboard(boolean empty, GridLayout chessboardLayout, Activity activity) {
         this.empty = empty;
         this.activity = activity;
@@ -52,49 +166,94 @@ public class Chessboard {
         this.empty = empty;
         this.activity = activity;
         fieldsInit();
-        ChessHelper.generateFields(chessboardLayout, activity, this);
         this.gameType = gameType;
-        if(gameType == GameType.ONLINE)
-        {
-            onlineGameHelper = new OnlineGameHelper();
-            onlineGameHelper.connect();
-            onlineGameHelper.setOnColorDefinedListener(color -> {
-                playerColorInOnlineGame = color.equalsIgnoreCase("white")? WHITE:BLACK;
-            });
-            onlineGameHelper.setOnMoveReceivedListener((receivedMove) -> {
-                if(moveHistory.contains(receivedMove))
+        if (gameType == GameType.ONLINE) {
+            onlineGameHelper = WebSocketManager.getInstance().getHelper();
+
+            playerColorInOnlineGame = onlineGameHelper.myColor.equalsIgnoreCase("white") ? WHITE : BLACK;
+            ChessHelper.generateFields(chessboardLayout, activity, this, playerColorInOnlineGame == WHITE);
+
+            onlineGameHelper.setOnMoveReceivedListener(receivedMove -> {
+                String[] words = moveHistory.trim().split("\\s+");
+                if (words[words.length - 1].trim().contains(receivedMove.trim()))
                     return;
                 String from = receivedMove.substring(0, 2);
                 String to = receivedMove.substring(4);
                 setPiece(to, getLocation(from).getPiece());
                 setNextPlayer();
+                if (checkIfDraw(playerToMove))
+                {
+                    onlineGameHelper.sendMoveDraw(lastMove);
+                    end = true;
+                }
+                if (checkIfMated(playerToMove))
+                {
+                    onlineGameHelper.sendMoveMate(lastMove);
+                    end = true;
+                }
+                updateTable();
+            });
+
+            onlineGameHelper.setOnWinnerDefinedListener(winner -> {
+                if(winner.equals("draw"))
+                {
+                    end = true;
+                    updateWinner();
+                    onlineGameHelper.disconnect();
+                }else if(winner.equals("white"))
+                {
+                    end = true;
+                    this.winner = WHITE;
+                    updateWinner();
+                    onlineGameHelper.disconnect();
+                }
+                else {
+                    end = true;
+                    this.winner = BLACK;
+                    updateWinner();
+                    onlineGameHelper.disconnect();
+                }
             });
         }
     }
 
     public void onClick(View view) {
-        if(gameType == GameType.ONLINE && playerColorInOnlineGame == null)
+        if(end)
             return;
-        if(gameType == GameType.ONLINE && playerToMove != playerColorInOnlineGame)
+        if (gameType == GameType.ONLINE && playerColorInOnlineGame == null)
+            return;
+        if (gameType == GameType.ONLINE && playerToMove != playerColorInOnlineGame)
             return;
         ChessField clickedTile = getLocation(view);
-        if((clickedTile.getPiece() == null || !clickedTile.getPiece().getPieceColor().equals(playerToMove)) && !isSomethingClicked())
+        if ((clickedTile.getPiece() == null || !clickedTile.getPiece().getPieceColor().equals(playerToMove)) && !isSomethingClicked())
             return;
         if (possibleMoves == null)
             clickedTile.onCLick(this);
         else if (possibleMoves.contains(clickedTile)) {
             setPiece(clickedTile.getCoordinates(), findClickedField().getPiece());
             deClick();
-            if(pawnOnLastRow() != null)
+            if (pawnOnLastRow() != null)
                 showPromotionDialog(pawnOnLastRow());
             setNextPlayer();
             clearEnPassants(playerToMove);
-            if(gameType == GameType.ONLINE)
+            if (gameType == GameType.ONLINE)
                 onlineGameHelper.sendMove(lastMove);
-            if(checkIfDraw(playerToMove))
-                fields.get(7).get(7).setPiece(new Pawn(WHITE));
-            if(checkIfMated(playerToMove))
-                fields.get(7).get(7).setPiece(new Pawn(WHITE));
+            if (checkIfDraw(playerToMove))
+            {
+                onlineGameHelper.sendMoveDraw(lastMove);
+                onlineGameHelper.disconnect();
+                end = true;
+                updateWinner();
+            }
+            if (checkIfMated(playerToMove))
+            {
+                onlineGameHelper.sendMoveMate(lastMove);
+                onlineGameHelper.disconnect();
+                end = true;
+                winner = playerToMove == WHITE? BLACK : WHITE;
+                updateWinner();
+            }
+            updateTable();
         } else
             deClick();
 
@@ -135,8 +294,8 @@ public class Chessboard {
         fields.get(0).get(0).setPiece(new Rook(PieceColor.BLACK), gameType);
         fields.get(0).get(1).setPiece(new Knight(PieceColor.BLACK), gameType);
         fields.get(0).get(2).setPiece(new Bishop(PieceColor.BLACK), gameType);
-        fields.get(0).get(4).setPiece(new Queen(PieceColor.BLACK), gameType);
-        fields.get(0).get(3).setPiece(new King(PieceColor.BLACK), gameType);
+        fields.get(0).get(3).setPiece(new Queen(PieceColor.BLACK), gameType);
+        fields.get(0).get(4).setPiece(new King(PieceColor.BLACK), gameType);
         fields.get(0).get(5).setPiece(new Bishop(PieceColor.BLACK), gameType);
         fields.get(0).get(6).setPiece(new Knight(PieceColor.BLACK), gameType);
         fields.get(0).get(7).setPiece(new Rook(PieceColor.BLACK), gameType);
@@ -171,25 +330,22 @@ public class Chessboard {
                 }
     }
 
-    public void clearEnPassants(PieceColor color)
-    {
+    public void clearEnPassants(PieceColor color) {
         for (List<ChessField> row : fields)
-            for (ChessField field : row)
-            {
-                if(field.isEmpty() || field.getPiece().getPieceColor() != color)
+            for (ChessField field : row) {
+                if (field.isEmpty() || field.getPiece().getPieceColor() != color)
                     continue;
-                if(field.getPiece() instanceof Pawn)
+                if (field.getPiece() instanceof Pawn)
                     field.getPiece().setAsMoved(0);
             }
     }
 
-    public void checkIfEnPassant(Piece piece)
-    {
-        if(! (piece instanceof Pawn))
+    public void checkIfEnPassant(Piece piece) {
+        if (!(piece instanceof Pawn))
             return;
-        if(((Pawn) piece).enPassantOnRight(this, getLocation(piece)))
+        if (((Pawn) piece).enPassantOnRight(this, getLocation(piece)))
             takePiece(getRightField(getLocation(piece)));
-        if(((Pawn) piece).enPassantOnLeft(this, getLocation(piece)))
+        if (((Pawn) piece).enPassantOnLeft(this, getLocation(piece)))
             takePiece(getLeftField(getLocation(piece)));
     }
 
@@ -204,8 +360,7 @@ public class Chessboard {
 
     }
 
-    public void setPromotedPiece(String coordinates, Piece piece)
-    {
+    public void setPromotedPiece(String coordinates, Piece piece) {
         for (List<ChessField> row : fields)
             for (ChessField field : row)
                 if (field.getCoordinates().equals(coordinates)) {
@@ -418,11 +573,10 @@ public class Chessboard {
 
 
     private ChessField pawnOnLastRow() {
-        for(int i=0; i<8; i++)
-        {
-            if(fields.get(0).get(i).getPiece() != null && fields.get(0).get(i).getPiece() instanceof Pawn)
+        for (int i = 0; i < 8; i++) {
+            if (fields.get(0).get(i).getPiece() != null && fields.get(0).get(i).getPiece() instanceof Pawn)
                 return fields.get(0).get(i);
-            if(fields.get(7).get(i).getPiece() != null && fields.get(7).get(i).getPiece() instanceof Pawn)
+            if (fields.get(7).get(i).getPiece() != null && fields.get(7).get(i).getPiece() instanceof Pawn)
                 return fields.get(7).get(i);
         }
         return null;
@@ -453,53 +607,64 @@ public class Chessboard {
             field.markAsPossibleToMove();
     }
 
-    public void setNextPlayer()
-    {
-        if(playerToMove.equals(WHITE))
+    public void setNextPlayer() {
+        if (playerToMove.equals(WHITE))
+        {
             playerToMove = BLACK;
+            timerBlack.start();
+            timerWhite.pause();
+        }
         else
+        {
             playerToMove = WHITE;
+            timerBlack.pause();
+            timerWhite.start();
+        }
     }
 
-    public List<ChessField> getAllMovesForColor(PieceColor color)
-    {
+    public List<ChessField> getAllMovesForColor(PieceColor color) {
         List<ChessField> moves = new ArrayList<>();
-        for(List<ChessField> row : fields)
-            for(ChessField field : row)
-                if(!field.isEmpty() && field.getPiece().getPieceColor().equals(color))
+        for (List<ChessField> row : fields)
+            for (ChessField field : row)
+                if (!field.isEmpty() && field.getPiece().getPieceColor().equals(color))
                     moves.addAll(field.getPiece().getMoves(this, true, true, false));
 
         moves = moves.stream().distinct().collect(Collectors.toList());
         return moves;
     }
 
-    public boolean checkIfChecked(PieceColor color)
-    {
+    public boolean checkIfChecked(PieceColor color) {
         Piece checkedKing = null;
         for (List<ChessField> row : fields)
             for (ChessField field : row)
-                if (field.getPiece() instanceof King && field.getPiece().getPieceColor().equals(color))
-                {
+                if (field.getPiece() instanceof King && field.getPiece().getPieceColor().equals(color)) {
                     checkedKing = field.getPiece();
                     break;
                 }
-        List<ChessField> checkedFields = getAllMovesForColor(checkedKing.getPieceColor()==WHITE? BLACK : WHITE);
+        List<ChessField> checkedFields = getAllMovesForColor(checkedKing.getPieceColor() == WHITE ? BLACK : WHITE);
         return checkedFields.contains(getLocation(checkedKing));
     }
 
-    public boolean checkIfDraw(PieceColor color)
-    {
-        return false;
+    public boolean checkIfDraw(PieceColor color) {
+        if(!isEnoughMaterialForPlayer(WHITE) && !isEnoughMaterialForPlayer(BLACK))
+            return true;
+        return getAllMovesForColor(color).isEmpty() && !checkIfChecked(color);
     }
 
-    public boolean isEnoughMaterialForPlayer(PieceColor color)
-    {
-        return false;
+
+    public boolean isEnoughMaterialForPlayer(PieceColor color) {
+        List<Piece> pieces = new ArrayList<>();
+        for(List<ChessField> row : fields)
+            for(ChessField f : row)
+                if(f.getPiece() != null && !(f.getPiece() instanceof King && f.getPiece().getPieceColor() == color))
+                    pieces.add(f.getPiece());
+        if(pieces.isEmpty())
+            return true;
+        return pieces.size() != 1 || (!(pieces.get(0) instanceof Knight) && !(pieces.get(0) instanceof Bishop));
     }
 
-    public boolean checkIfMated(PieceColor color)
-    {
-        if(!checkIfChecked(color))
+    public boolean checkIfMated(PieceColor color) {
+        if (!checkIfChecked(color))
             return false;
         List<ChessField> possibleMoves = getAllMovesForColor(color);
         return !possibleMoves.isEmpty();
@@ -530,7 +695,7 @@ public class Chessboard {
         final AlertDialog dialog = builder.create();
 
         List<ImageView> drawables = getDrawablesForPromotion();
-        for(int i = 0; i < 4; i++) {
+        for (int i = 0; i < 4; i++) {
             LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(size, size);
             params.setMargins(margin, margin, margin, margin);
             drawables.get(i).setLayoutParams(params);
@@ -538,13 +703,13 @@ public class Chessboard {
             int index = i;
             PieceColor color = playerToMove;
             drawables.get(i).setOnClickListener(v -> {
-                if(index == 0)
+                if (index == 0)
                     setPromotedPiece(field.getCoordinates(), new Queen(color));
-                if(index == 1)
+                if (index == 1)
                     setPromotedPiece(field.getCoordinates(), new Rook(color));
-                if(index == 2)
+                if (index == 2)
                     setPromotedPiece(field.getCoordinates(), new Bishop(color));
-                if(index == 3)
+                if (index == 3)
                     setPromotedPiece(field.getCoordinates(), new Knight(color));
                 dialog.dismiss();
             });
@@ -555,18 +720,16 @@ public class Chessboard {
         dialog.show();
     }
 
-    private List<ImageView> getDrawablesForPromotion()
-    {
+    private List<ImageView> getDrawablesForPromotion() {
         List<ImageView> figures = new ArrayList<>();
 
         // QUEEN
         ImageView promotionView = new ImageView(activity);
         promotionView.setImageResource(R.drawable.queen);
         promotionView.setVisibility(View.VISIBLE);
-        if(playerToMove == WHITE)
+        if (playerToMove == WHITE)
             promotionView.setColorFilter(Color.WHITE);
-        else
-        {
+        else {
             promotionView.setColorFilter(Color.BLACK);
             promotionView.setRotation(180f);
         }
@@ -576,10 +739,9 @@ public class Chessboard {
         promotionView = new ImageView(activity);
         promotionView.setImageResource(R.drawable.rook);
         promotionView.setVisibility(View.VISIBLE);
-        if(playerToMove == WHITE)
+        if (playerToMove == WHITE)
             promotionView.setColorFilter(Color.WHITE);
-        else
-        {
+        else {
             promotionView.setColorFilter(Color.BLACK);
             promotionView.setRotation(180f);
         }
@@ -589,10 +751,9 @@ public class Chessboard {
         promotionView = new ImageView(activity);
         promotionView.setImageResource(R.drawable.bishop);
         promotionView.setVisibility(View.VISIBLE);
-        if(playerToMove == WHITE)
+        if (playerToMove == WHITE)
             promotionView.setColorFilter(Color.WHITE);
-        else
-        {
+        else {
             promotionView.setColorFilter(Color.BLACK);
             promotionView.setRotation(180f);
         }
@@ -602,10 +763,9 @@ public class Chessboard {
         promotionView = new ImageView(activity);
         promotionView.setImageResource(R.drawable.knight);
         promotionView.setVisibility(View.VISIBLE);
-        if(playerToMove == WHITE)
+        if (playerToMove == WHITE)
             promotionView.setColorFilter(Color.WHITE);
-        else
-        {
+        else {
             promotionView.setColorFilter(Color.BLACK);
             promotionView.setRotation(180f);
         }

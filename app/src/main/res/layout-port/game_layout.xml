@@ -54,19 +54,37 @@
                 app:cardCornerRadius="16dp"
                 app:cardElevation="4dp">
 
-                <TextView
-                    android:paddingEnd="20dp"
-                    android:background="@color/grapefruit_orange"
-                    android:id="@+id/enemyTime"
+                <LinearLayout
+                    android:id="@+id/playerEnemyLayout"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:gravity="center_vertical|end"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:background="@color/grapefruit_orange"
                     android:paddingTop="12dp"
                     android:paddingBottom="12dp"
-                    android:text="10:00"
-                    android:textColor="@color/white"
-                    android:textSize="25sp"
-                    android:textStyle="bold" />
+                    android:paddingEnd="20dp">
+
+                    <ImageView
+                        android:id="@+id/enemyIcon"
+                        android:layout_width="30dp"
+                        android:layout_height="30dp"
+                        android:layout_marginStart="12dp"
+                        android:layout_marginEnd="12dp"
+                        android:visibility="gone"
+                        android:src="@drawable/crown" />
+
+                    <TextView
+                        android:id="@+id/enemyTime"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:gravity="center_vertical|end"
+                        android:text="10:00"
+                        android:textColor="@color/white"
+                        android:textSize="25sp"
+                        android:textStyle="bold"/>
+                </LinearLayout>
 
             </com.google.android.material.card.MaterialCardView>
 
@@ -94,19 +112,37 @@
                 app:cardCornerRadius="16dp"
                 app:cardElevation="4dp">
 
-                <TextView
-                    android:background="@color/grapefruit_orange"
-                    android:id="@+id/playerTime"
+                <LinearLayout
+                    android:id="@+id/playerTimeLayout"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:gravity="center_vertical|end"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:background="@color/grapefruit_orange"
                     android:paddingTop="12dp"
                     android:paddingBottom="12dp"
-                    android:text="10:00"
-                    android:paddingEnd="20dp"
-                    android:textColor="@color/white"
-                    android:textSize="25sp"
-                    android:textStyle="bold" />
+                    android:paddingEnd="20dp">
+
+                    <ImageView
+                        android:id="@+id/playerIcon"
+                        android:layout_width="30dp"
+                        android:layout_height="30dp"
+                        android:layout_marginStart="12dp"
+                        android:layout_marginEnd="12dp"
+                        android:visibility="gone"
+                        android:src="@drawable/crown" />
+
+                    <TextView
+                        android:id="@+id/playerTime"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:gravity="center_vertical|end"
+                        android:text="10:00"
+                        android:textColor="@color/white"
+                        android:textSize="25sp"
+                        android:textStyle="bold"/>
+                </LinearLayout>
 
             </com.google.android.material.card.MaterialCardView>
 
@@ -144,24 +180,6 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
                     android:stretchColumns="*">
-
-                    <TableRow>
-                        <TextView
-                            android:text="1."
-                            android:gravity="center"
-                            android:textColor="@color/orange"
-                            android:textSize="20sp"/>
-                        <TextView
-                            android:text="d5"
-                            android:gravity="center"
-                            android:textColor="@color/white"
-                            android:textSize="20sp"/>
-                        <TextView
-                            android:text="O-O"
-                            android:gravity="center"
-                        android:textColor="@color/white"
-                        android:textSize="20sp"/>
-                    </TableRow>
 
 
                 </TableLayout>

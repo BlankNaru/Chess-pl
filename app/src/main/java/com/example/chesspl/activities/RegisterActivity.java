@@ -31,16 +31,6 @@ public class RegisterActivity extends AppCompatActivity {
 
         findViewById(R.id.submitButton).setOnClickListener(v -> {
 
-            if (!password.getText().toString().equals(passwordRepeated.getText().toString())) {
-                Toast.makeText(RegisterActivity.this, "Passwords are different", Toast.LENGTH_SHORT).show();
-                return;
-            }
-
-            String emailRegex = "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$";
-            if (!email.getText().toString().matches(emailRegex)) {
-                Toast.makeText(RegisterActivity.this, "Not proper email", Toast.LENGTH_SHORT).show();
-                return;
-            }
 
 
             RegisterRequest req = new RegisterRequest(username.getText().toString(), password.getText().toString(), email.getText().toString());

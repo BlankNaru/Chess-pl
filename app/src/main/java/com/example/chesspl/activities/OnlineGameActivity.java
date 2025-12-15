@@ -9,7 +9,7 @@ import com.example.chesspl.R;
 import com.example.chesspl.chessClasses.Chessboard;
 import com.example.chesspl.chessClasses.GameType;
 
-public class OnlineGameActivity  extends AppCompatActivity {
+public class OnlineGameActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -17,7 +17,8 @@ public class OnlineGameActivity  extends AppCompatActivity {
 
         GridLayout chessBoard = findViewById(R.id.chessBoard);
         Chessboard chessboard = new Chessboard(false, chessBoard, this, GameType.ONLINE);
-
-
+        chessboard.setMoveTable(findViewById(R.id.moveHistoryTable));
+        chessboard.setTimers(getIntent().getStringExtra("time"), findViewById(R.id.playerTime), findViewById(R.id.enemyTime));
+        chessboard.setWinnerImageView(findViewById(R.id.playerIcon), findViewById(R.id.enemyIcon));
     }
 }
