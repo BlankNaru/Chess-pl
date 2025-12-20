@@ -224,6 +224,22 @@
                     app:icon="@drawable/baseline_history_24"
                     app:iconGravity="textStart"
                     app:iconPadding="8dp" />
+
+                <Button
+                    android:id="@+id/addFriendButton"
+                    android:layout_width="match_parent"
+                    android:layout_height="50dp"
+                    android:layout_marginHorizontal="20dp"
+                    android:layout_marginTop="24dp"
+                    android:backgroundTint="#26972A"
+                    android:text="Zaproś do znajomych"
+                    android:textColor="@color/white"
+                    android:textSize="20sp"
+                    android:textStyle="bold"
+                    app:cornerRadius="16dp"
+                    app:icon="@drawable/baseline_person_add_alt_1_24"
+                    app:iconGravity="textStart"
+                    app:iconPadding="8dp" />
             </LinearLayout>
         </androidx.core.widget.NestedScrollView>
 
@@ -236,6 +252,7 @@
         android:layout_height="match_parent"
         android:layout_gravity="start"
         android:background="@color/dark_gray"
-        app:menu="@menu/drawer" />
+        app:menu="@menu/drawer"
+        app:itemTextColor="@color/white"/>
 
 </androidx.drawerlayout.widget.DrawerLayout>

@@ -2,19 +2,7 @@
 <project version="4">
   <component name="deploymentTargetDropDown">
     <value>
-      <entry key="Unnamed">
-        <State />
-      </entry>
-      <entry key="add">
-        <State />
-      </entry>
-      <entry key="clear">
-        <State />
-      </entry>
-      <entry key="game">
-        <State />
-      </entry>
-      <entry key="solve">
+      <entry key="app">
         <State />
       </entry>
     </value>

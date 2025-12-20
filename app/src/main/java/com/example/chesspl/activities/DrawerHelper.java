@@ -31,6 +31,12 @@ public class DrawerHelper {
                 navigateTo(AccountActivity.class);
             } else if (id == R.id.nav_settings) {
                 navigateTo(LocalGameActivity.class);
+            } else if (id == R.id.nav_search_player) {
+                navigateTo(SearchPlayerActivity.class);
+            } else if (id == R.id.nav_game_offline) {
+                navigateTo(LocalGameActivity.class);
+            } else if (id == R.id.nav_game_online) {
+                navigateTo(OnlineGameSearchActivity.class);
             }
             else if(id == R.id.nav_puzzles)
             {
@@ -44,10 +50,11 @@ public class DrawerHelper {
 
 
     private void navigateTo(Class<?> targetActivity) {
-        if (!targetActivity.isInstance(activity)) {
-            Intent intent = new Intent(activity, targetActivity);
-            activity.startActivity(intent);
-        }
+        Intent intent = new Intent(activity, targetActivity);
+        if (activity instanceof AccountActivity)
+            intent.putExtra("username", "");
+        activity.startActivity(intent);
+
     }
 
 

@@ -23,11 +23,11 @@
         android:layout_marginTop="110dp" />
 
     <EditText
-        android:drawableStart="@drawable/baseline_mail_outline_24"
+        android:drawableStart="@drawable/baseline_person_24"
         android:drawablePadding="5dp"
         android:id="@+id/firstEditText"
         style="@style/BoxedEditText"
-        android:hint="Mail"
+        android:hint="Nazwa gracza"
         app:layout_constraintTop_toBottomOf="@id/titleText"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"

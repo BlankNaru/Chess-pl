@@ -1,5 +1,8 @@
 package com.example.chesspl.chessClasses.onlineGameClasses;
 
+import static android.content.Context.MODE_PRIVATE;
+
+import android.content.Context;
 import android.os.Handler;
 import android.os.Looper;
 
@@ -21,9 +24,20 @@ public class OnlineGameHelper {
     public String receivedMove;
     private OnMoveReceivedListener moveListener;
     private OnColorDefinedListener colorListener;
+    private OnWinnerDefinedListener winnerListener;
+    private Context context;
 
     public void setOnMoveReceivedListener(OnMoveReceivedListener listener) {
         this.moveListener = listener;
+    }
+
+    public void setOnWinnerDefinedListener(OnWinnerDefinedListener listener) {
+        this.winnerListener = listener;
+    }
+
+    public void setContext(Context context)
+    {
+        this.context = context;
     }
 
     public void setOnColorDefinedListener(OnColorDefinedListener listener) {
@@ -57,7 +71,8 @@ public class OnlineGameHelper {
             public void onOpen(@NotNull WebSocket webSocket, @NotNull Response response) {
                 System.out.println("WebSocket connected!");
                 // Optional: send a join message
-                send("{\"action\":\"join\",\"gameId\":\"123\"}");
+                String elo = context.getSharedPreferences("prefs", MODE_PRIVATE).getString("elo", "200");
+                send("{\"action\":\"search\",\"elo\":\"" + elo + "\",\"time\":\"10\"}");
             }
 
             @Override
@@ -73,6 +88,16 @@ public class OnlineGameHelper {
 
                         if (event.equals("move")) {
                             final String move = json.getString("move");
+
+                            new Handler(Looper.getMainLooper()).post(() -> {
+                                if (moveListener != null) {
+                                    moveListener.onMoveReceived(move);
+                                }
+                            });
+                        }
+
+                        if (event.equals("end")) {
+                            final String move = json.getString("winner");
 
                             new Handler(Looper.getMainLooper()).post(() -> {
                                 if (moveListener != null) {
@@ -106,6 +131,18 @@ public class OnlineGameHelper {
         client.dispatcher().executorService();
     }
 
+    public void disconnect() {
+        if (webSocket != null) {
+            webSocket.send("{\"action\":\"cancel\"}");
+
+            webSocket.close(1000, "Client disconnected");
+
+            if (client != null) {
+                client.dispatcher().executorService().shutdown();
+            }
+        }
+    }
+
     public void send(String message) {
         if (webSocket != null) {
             webSocket.send(message);
@@ -115,7 +152,25 @@ public class OnlineGameHelper {
 
     public void sendMove(String message) {
         if (webSocket != null) {
-            webSocket.send("{\"gameId\":\"123\",\"action\":\"move\",\"move\":\"" + message + "\"}");
+            webSocket.send("{\"action\":\"move\",\"move\":\"" + message + "\"}");
+        }
+    }
+
+    public void sendMoveMate(String message) {
+        if (webSocket != null) {
+            webSocket.send("{\"action\":\"mate\",\"move\":\"" + message + "\"}");
+        }
+    }
+
+    public void sendTimeOut(String message) {
+        if (webSocket != null) {
+            webSocket.send("{\"action\":\"timeout\",\"color\":\"" + message + "\"}");
+        }
+    }
+
+    public void sendMoveDraw(String message) {
+        if (webSocket != null) {
+            webSocket.send("{\"action\":\"draw\",\"move\":\"" + message + "\"}");
         }
     }
 
